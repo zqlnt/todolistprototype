@@ -286,6 +286,27 @@ src/
 └── main.tsx           # Application entry point
 ```
 
+#### Data State
+- `tasks[]` - All user tasks from database *(real backend integration)*
+- `suggestedTasks[]` - AI-generated task suggestions *(from mock email data)*
+- `emails[]` - Synced email data *(mock data from backend)*
+- `contacts[]` - User contacts *(mock data in frontend)*
+- `chats[]` - Chat conversations *(mock data in frontend)*
+- `notifications[]` - System notifications *(mock data in frontend)*
+
+#### UI State
+- `currentPage` - Active page/view
+- `sectionFilter` - Task filtering (Today, Tomorrow, etc.)
+- `showPriorityOnly` - Priority filter toggle
+- `viewMode` - List or grid view
+- `taskGroupingMode` - Group by time or category
+
+#### Authentication State
+- `session` - Supabase session object *(real backend integration)*
+- `user` - Current user data *(real backend integration)*
+- `authStatus` - Loading/authenticated/unauthenticated
+- `userProfile` - User preferences and profile data *(real backend integration)*
+
 #### Adding New Features
 
 1. **Define TypeScript Types** in `types.ts`:
@@ -431,27 +452,12 @@ export default ComponentName;
 **Zustand Store Design**:
 ```typescript
 interface TodoState {
-  // Data State
+  // Data (from backend)
   tasks: Task[];
-  suggestedTasks: Task[];
-  emails: Email[];
-  contacts: Contact[];
-  chats: Chat[];
-  notifications: Notification[];
   
-  // UI State
+  // UI State (local only)
   currentPage: AppPage;
-  sectionFilter: string;
-  showPriorityOnly: boolean;
-  viewMode: 'list' | 'grid';
-  taskGroupingMode: 'time' | 'category';
   isLoading: boolean;
-  
-  // Authentication State
-  session: Session | null;
-  user: User | null;
-  authStatus: 'loading' | 'authenticated' | 'unauthenticated';
-  userProfile: UserProfile | null;
   
   // Actions (async operations)
   addTask: (title: string) => Promise<void>;
