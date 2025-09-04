@@ -100,10 +100,10 @@
 
 #### Sentinel AI
 - **Chat Interface**: Conversational AI assistant
-- **Productivity Insights**: Analysis of task patterns (ready for LLM integration)
+- **Productivity Insights**: Analysis of task patterns (ready for Gemini LLM integration)
 - **Smart Suggestions**: Contextual recommendations
 - **Natural Language**: Ask questions about tasks and schedule
-- **Integration Ready**: Prepared for OpenAI/Anthropic integration
+- **Integration Ready**: Prepared for Google Gemini integration
 
 #### Suggested Prompts
 - "What are my most important tasks today?"
@@ -338,7 +338,7 @@
 ### 2. Future Integrations
 - **Email Providers**: Gmail, Outlook, Apple Mail
 - **Calendar Services**: Google Calendar, Outlook Calendar
-- **AI Services**: OpenAI, Anthropic for intelligent features
+- **AI Services**: Google Gemini for intelligent features
 - **Cloud Storage**: File attachments and backups
 - **Third-party APIs**: Weather, news, travel information
 

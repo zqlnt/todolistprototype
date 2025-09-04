@@ -433,17 +433,15 @@ async def websocket_endpoint(websocket: WebSocket):
 ### AI Integration
 
 ```python
-# LLM integration for Sentinel AI
-from openai import AsyncOpenAI
+# Gemini LLM integration for Sentinel AI
+import google.generativeai as genai
 
 @router.post("/ai/chat")
 async def chat_with_ai(message: str, current_user: User = Depends(get_current_user)):
-    client = AsyncOpenAI()
-    response = await client.chat.completions.create(
-        model="gpt-4",
-        messages=[{"role": "user", "content": message}]
-    )
-    return {"response": response.choices[0].message.content}
+    genai.configure(api_key=os.getenv("GEMINI_API_KEY"))
+    model = genai.GenerativeModel('gemini-pro')
+    response = await model.generate_content_async(message)
+    return {"response": response.text}
 ```
 
 This architecture provides a solid foundation for a scalable, maintainable, and secure productivity application while remaining flexible for future enhancements and integrations.

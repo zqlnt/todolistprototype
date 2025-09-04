@@ -543,7 +543,7 @@ Supabase handles database hosting. Ensure:
 
 ### Planned Features
 - **Real Email Integration**: Connect to Gmail, Outlook, Apple Mail
-- **LLM Integration**: Actual AI responses in Sentinel AI
+- **Gemini LLM Integration**: Actual AI responses in Sentinel AI powered by Google Gemini
 - **Real-time Collaboration**: Live updates across users
 - **Mobile App**: React Native or native iOS/Android
 - **Advanced Analytics**: Productivity insights and reporting
