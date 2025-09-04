@@ -405,211 +405,219 @@ const Dashboard: React.FC = () => {
         </div>
 
         {/* Notifications Preview */}
-        <div className="bg-white rounded-2xl shadow-sm border border-neutral-200 p-4 mx-auto max-w-[330px] lg:max-w-4xl">
-          <div className="flex items-center justify-between mb-4">
-            <div className="flex items-center space-x-1">
-              <Bell size={18} className="text-indigo-600" />
-              <h2 className="text-sm font-semibold text-neutral-900">Notifications</h2>
-              {unreadNotifications.length > 0 && (
-                <span className="bg-red-500 text-white text-xs px-1.5 py-0.5 rounded-full">
-                  {unreadNotifications.length}
-                </span>
-              )}
+        {!isGuestMode && (
+          <div className="bg-white rounded-2xl shadow-sm border border-neutral-200 p-4 mx-auto max-w-[330px] lg:max-w-4xl">
+            <div className="flex items-center justify-between mb-4">
+              <div className="flex items-center space-x-1">
+                <Bell size={18} className="text-indigo-600" />
+                <h2 className="text-sm font-semibold text-neutral-900">Notifications</h2>
+                {unreadNotifications.length > 0 && (
+                  <span className="bg-red-500 text-white text-xs px-1.5 py-0.5 rounded-full">
+                    {unreadNotifications.length}
+                  </span>
+                )}
+              </div>
+              <button
+                onClick={() => setCurrentPage('notifications')}
+                className="text-xs text-indigo-600 hover:text-indigo-700 font-medium"
+              >
+                View All
+              </button>
             </div>
-            <button
-              onClick={() => setCurrentPage('notifications')}
-              className="text-xs text-indigo-600 hover:text-indigo-700 font-medium"
-            >
-              View All
-            </button>
-          </div>
-          
-          <div className="space-y-2">
-            {notifications.slice(0, 3).map(notification => (
-              <div key={notification.id} className={`p-2 rounded-lg ${notification.isRead ? 'bg-neutral-50' : 'bg-blue-50'}`}>
-                <div className="flex items-start space-x-2">
-                  <div className="flex-shrink-0 mt-0.5">
-                    {notification.type === 'task' && <CheckSquare size={12} className="text-blue-500" />}
-                    {notification.type === 'calendar' && <Calendar size={12} className="text-green-500" />}
-                    {notification.type === 'chat' && <MessageCircle size={12} className="text-purple-500" />}
-                    {notification.type === 'system' && <Settings size={12} className="text-gray-500" />}
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <h4 className="text-xs font-medium text-neutral-900 truncate">{notification.title}</h4>
-                    <p className="text-xs text-neutral-600 truncate">{notification.message}</p>
+            
+            <div className="space-y-2">
+              {notifications.slice(0, 3).map(notification => (
+                <div key={notification.id} className={`p-2 rounded-lg ${notification.isRead ? 'bg-neutral-50' : 'bg-blue-50'}`}>
+                  <div className="flex items-start space-x-2">
+                    <div className="flex-shrink-0 mt-0.5">
+                      {notification.type === 'task' && <CheckSquare size={12} className="text-blue-500" />}
+                      {notification.type === 'calendar' && <Calendar size={12} className="text-green-500" />}
+                      {notification.type === 'chat' && <MessageCircle size={12} className="text-purple-500" />}
+                      {notification.type === 'system' && <Settings size={12} className="text-gray-500" />}
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <h4 className="text-xs font-medium text-neutral-900 truncate">{notification.title}</h4>
+                      <p className="text-xs text-neutral-600 truncate">{notification.message}</p>
+                    </div>
                   </div>
                 </div>
-              </div>
-            ))}
-            
-            {notifications.length === 0 && (
-              <div className="text-center py-2">
-                <Bell size={20} className="mx-auto text-neutral-300 mb-1" />
-                <p className="text-xs text-neutral-500">No notifications</p>
-              </div>
-            )}
+              ))}
+              
+              {notifications.length === 0 && (
+                <div className="text-center py-2">
+                  <Bell size={20} className="mx-auto text-neutral-300 mb-1" />
+                  <p className="text-xs text-neutral-500">No notifications</p>
+                </div>
+              )}
+            </div>
           </div>
-        </div>
+        )}
 
         {/* Chats Preview */}
-        <div className="bg-white rounded-2xl shadow-sm border border-neutral-200 p-4 mx-auto max-w-[330px] lg:max-w-4xl">
-          <div className="flex items-center justify-between mb-4">
-            <div className="flex items-center space-x-1">
-              <MessageCircle size={18} className="text-indigo-600" />
-              <h2 className="text-sm font-semibold text-neutral-900">Chats</h2>
-              {unreadChats.length > 0 && (
-                <span className="bg-red-500 text-white text-xs px-1.5 py-0.5 rounded-full">
-                  {unreadChats.reduce((sum, chat) => sum + (chat.unreadCount || 0), 0)}
-                </span>
-              )}
-            </div>
-            <button
-              onClick={() => setCurrentPage('chats')}
-              className="text-xs text-indigo-600 hover:text-indigo-700 font-medium"
-            >
-              View All
-            </button>
-          </div>
-          
-          <div className="space-y-2">
-            {chats.slice(0, 3).map(chat => (
-              <div key={chat.id} className="flex items-center space-x-2 p-2 hover:bg-neutral-50 rounded-lg transition-colors">
-                <div className="flex-shrink-0 relative">
-                  {chat.avatar ? (
-                    <img 
-                      src={chat.avatar} 
-                      alt={chat.name}
-                      className="w-8 h-8 rounded-full object-cover"
-                    />
-                  ) : (
-                    <div className="w-8 h-8 bg-neutral-200 rounded-full flex items-center justify-center">
-                      <MessageCircle size={12} className="text-neutral-500" />
-                    </div>
-                  )}
-                  
-                  {chat.unreadCount && chat.unreadCount > 0 && (
-                    <div className="absolute -top-1 -right-1 bg-red-500 text-white text-xs w-4 h-4 rounded-full flex items-center justify-center">
-                      {chat.unreadCount}
-                    </div>
-                  )}
-                </div>
-                
-                <div className="flex-1 min-w-0">
-                  <h4 className="text-xs font-medium text-neutral-900 truncate">{chat.name}</h4>
-                  {chat.lastMessage && (
-                    <p className="text-xs text-neutral-600 truncate">{chat.lastMessage}</p>
-                  )}
-                </div>
+        {!isGuestMode && (
+          <div className="bg-white rounded-2xl shadow-sm border border-neutral-200 p-4 mx-auto max-w-[330px] lg:max-w-4xl">
+            <div className="flex items-center justify-between mb-4">
+              <div className="flex items-center space-x-1">
+                <MessageCircle size={18} className="text-indigo-600" />
+                <h2 className="text-sm font-semibold text-neutral-900">Chats</h2>
+                {unreadChats.length > 0 && (
+                  <span className="bg-red-500 text-white text-xs px-1.5 py-0.5 rounded-full">
+                    {unreadChats.reduce((sum, chat) => sum + (chat.unreadCount || 0), 0)}
+                  </span>
+                )}
               </div>
-            ))}
+              <button
+                onClick={() => setCurrentPage('chats')}
+                className="text-xs text-indigo-600 hover:text-indigo-700 font-medium"
+              >
+                View All
+              </button>
+            </div>
             
-            {chats.length === 0 && (
-              <div className="text-center py-2">
-                <MessageCircle size={20} className="mx-auto text-neutral-300 mb-1" />
-                <p className="text-xs text-neutral-500">No chats</p>
-              </div>
-            )}
-          </div>
-        </div>
-
-        {/* Contacts Preview */}
-        <div className="bg-white rounded-2xl shadow-sm border border-neutral-200 p-4 mx-auto max-w-[330px] lg:max-w-4xl">
-          <div className="flex items-center justify-between mb-4">
-            <div className="flex items-center space-x-1">
-              <Users size={18} className="text-indigo-600" />
-              <h2 className="text-sm font-semibold text-neutral-900">Contacts</h2>
-            </div>
-            <button
-              onClick={() => setCurrentPage('contacts')}
-              className="text-xs text-indigo-600 hover:text-indigo-700 font-medium"
-            >
-              View All
-            </button>
-          </div>
-          
-          <div className="space-y-2">
-            {contacts.slice(0, 3).map(contact => (
-              <div key={contact.id} className="flex items-center space-x-2 p-2 hover:bg-neutral-50 rounded-lg transition-colors">
-                <div className="flex-shrink-0">
-                  {contact.avatar ? (
-                    <img 
-                      src={contact.avatar} 
-                      alt={contact.name}
-                      className="w-8 h-8 rounded-full object-cover"
-                    />
-                  ) : (
-                    <div className="w-8 h-8 bg-neutral-200 rounded-full flex items-center justify-center">
-                      <Users size={12} className="text-neutral-500" />
-                    </div>
-                  )}
-                </div>
-                
-                <div className="flex-1 min-w-0">
-                  <div className="flex items-center space-x-1 min-w-0">
-                    <h4 className="text-xs font-medium text-neutral-900 truncate">{contact.name}</h4>
-                    {contact.isFavorite && (
-                      <Star size={10} className="text-yellow-500 flex-shrink-0" fill="currentColor" />
+            <div className="space-y-2">
+              {chats.slice(0, 3).map(chat => (
+                <div key={chat.id} className="flex items-center space-x-2 p-2 hover:bg-neutral-50 rounded-lg transition-colors">
+                  <div className="flex-shrink-0 relative">
+                    {chat.avatar ? (
+                      <img 
+                        src={chat.avatar} 
+                        alt={chat.name}
+                        className="w-8 h-8 rounded-full object-cover"
+                      />
+                    ) : (
+                      <div className="w-8 h-8 bg-neutral-200 rounded-full flex items-center justify-center">
+                        <MessageCircle size={12} className="text-neutral-500" />
+                      </div>
+                    )}
+                    
+                    {chat.unreadCount && chat.unreadCount > 0 && (
+                      <div className="absolute -top-1 -right-1 bg-red-500 text-white text-xs w-4 h-4 rounded-full flex items-center justify-center">
+                        {chat.unreadCount}
+                      </div>
                     )}
                   </div>
-                  {contact.role && (
-                    <p className="text-xs text-neutral-600 truncate">
-                      {contact.role}{contact.company && ` at ${contact.company}`}
-                    </p>
-                  )}
+                  
+                  <div className="flex-1 min-w-0">
+                    <h4 className="text-xs font-medium text-neutral-900 truncate">{chat.name}</h4>
+                    {chat.lastMessage && (
+                      <p className="text-xs text-neutral-600 truncate">{chat.lastMessage}</p>
+                    )}
+                  </div>
                 </div>
-              </div>
-            ))}
-            
-            {contacts.length === 0 && (
-              <div className="text-center py-2">
-                <Users size={20} className="mx-auto text-neutral-300 mb-1" />
-                <p className="text-xs text-neutral-500">No contacts</p>
-              </div>
-            )}
+              ))}
+              
+              {chats.length === 0 && (
+                <div className="text-center py-2">
+                  <MessageCircle size={20} className="mx-auto text-neutral-300 mb-1" />
+                  <p className="text-xs text-neutral-500">No chats</p>
+                </div>
+              )}
+            </div>
           </div>
-        </div>
+        )}
+
+        {/* Contacts Preview */}
+        {!isGuestMode && (
+          <div className="bg-white rounded-2xl shadow-sm border border-neutral-200 p-4 mx-auto max-w-[330px] lg:max-w-4xl">
+            <div className="flex items-center justify-between mb-4">
+              <div className="flex items-center space-x-1">
+                <Users size={18} className="text-indigo-600" />
+                <h2 className="text-sm font-semibold text-neutral-900">Contacts</h2>
+              </div>
+              <button
+                onClick={() => setCurrentPage('contacts')}
+                className="text-xs text-indigo-600 hover:text-indigo-700 font-medium"
+              >
+                View All
+              </button>
+            </div>
+            
+            <div className="space-y-2">
+              {contacts.slice(0, 3).map(contact => (
+                <div key={contact.id} className="flex items-center space-x-2 p-2 hover:bg-neutral-50 rounded-lg transition-colors">
+                  <div className="flex-shrink-0">
+                    {contact.avatar ? (
+                      <img 
+                        src={contact.avatar} 
+                        alt={contact.name}
+                        className="w-8 h-8 rounded-full object-cover"
+                      />
+                    ) : (
+                      <div className="w-8 h-8 bg-neutral-200 rounded-full flex items-center justify-center">
+                        <Users size={12} className="text-neutral-500" />
+                      </div>
+                    )}
+                  </div>
+                  
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center space-x-1 min-w-0">
+                      <h4 className="text-xs font-medium text-neutral-900 truncate">{contact.name}</h4>
+                      {contact.isFavorite && (
+                        <Star size={10} className="text-yellow-500 flex-shrink-0" fill="currentColor" />
+                      )}
+                    </div>
+                    {contact.role && (
+                      <p className="text-xs text-neutral-600 truncate">
+                        {contact.role}{contact.company && ` at ${contact.company}`}
+                      </p>
+                    )}
+                  </div>
+                </div>
+              ))}
+              
+              {contacts.length === 0 && (
+                <div className="text-center py-2">
+                  <Users size={20} className="mx-auto text-neutral-300 mb-1" />
+                  <p className="text-xs text-neutral-500">No contacts</p>
+                </div>
+              )}
+            </div>
+          </div>
+        )}
 
         {/* Inbox Section */}
-        <div className="bg-white rounded-2xl shadow-sm border border-neutral-200 p-4 mx-auto max-w-[330px] lg:max-w-4xl">
-          <div className="flex items-center justify-between mb-4">
-            <div className="flex items-center space-x-1">
-              <Mail size={18} className="text-indigo-600" />
-              <h2 className="text-sm font-semibold text-neutral-900">Inbox</h2>
-              <span className="text-xs text-neutral-500">({emails.length})</span>
-            </div>
-            <button
-              onClick={() => setCurrentPage('emails')}
-              className="text-xs text-indigo-600 hover:text-indigo-700 font-medium"
-            >
-              View All
-            </button>
-          </div>
-          
-          <div className="divide-y divide-neutral-100">
-            {emails.length === 0 ? (
-              <div className="py-4 text-center text-neutral-500">
-                <Mail size={20} className="mx-auto mb-1 text-neutral-300" />
-                <p className="text-xs">No emails yet</p>
+        {!isGuestMode && (
+          <div className="bg-white rounded-2xl shadow-sm border border-neutral-200 p-4 mx-auto max-w-[330px] lg:max-w-4xl">
+            <div className="flex items-center justify-between mb-4">
+              <div className="flex items-center space-x-1">
+                <Mail size={18} className="text-indigo-600" />
+                <h2 className="text-sm font-semibold text-neutral-900">Inbox</h2>
+                <span className="text-xs text-neutral-500">({emails.length})</span>
               </div>
-            ) : (
-              emails.slice(0, 3).map((email) => (
-                <div key={email.id} className="py-2 hover:bg-neutral-50 transition-colors">
-                  <div className="flex items-start justify-between mb-0.5">
-                    <h3 className="text-xs font-medium text-neutral-900 truncate flex-1">
-                      {email.subject}
-                    </h3>
-                    <span className="text-xs text-neutral-500 flex-shrink-0">
-                      {formatEmailTime(email.receivedAt)}
-                    </span>
-                  </div>
-                  <p className="text-xs text-neutral-600 truncate">
-                    {email.body.length > 80 ? email.body.substring(0, 80) + '...' : email.body}
-                  </p>
+              <button
+                onClick={() => setCurrentPage('emails')}
+                className="text-xs text-indigo-600 hover:text-indigo-700 font-medium"
+              >
+                View All
+              </button>
+            </div>
+            
+            <div className="divide-y divide-neutral-100">
+              {emails.length === 0 ? (
+                <div className="py-4 text-center text-neutral-500">
+                  <Mail size={20} className="mx-auto mb-1 text-neutral-300" />
+                  <p className="text-xs">No emails yet</p>
                 </div>
-              ))
-            )}
+              ) : (
+                emails.slice(0, 3).map((email) => (
+                  <div key={email.id} className="py-2 hover:bg-neutral-50 transition-colors">
+                    <div className="flex items-start justify-between mb-0.5">
+                      <h3 className="text-xs font-medium text-neutral-900 truncate flex-1">
+                        {email.subject}
+                      </h3>
+                      <span className="text-xs text-neutral-500 flex-shrink-0">
+                        {formatEmailTime(email.receivedAt)}
+                      </span>
+                    </div>
+                    <p className="text-xs text-neutral-600 truncate">
+                      {email.body.length > 80 ? email.body.substring(0, 80) + '...' : email.body}
+                    </p>
+                  </div>
+                ))
+              )}
+            </div>
           </div>
-        </div>
+        )}
 
         {/* To-Do List Section */}
         <div className="bg-white rounded-2xl shadow-sm border border-neutral-200 p-4 mx-auto max-w-[330px] lg:max-w-4xl">
