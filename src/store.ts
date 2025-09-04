@@ -21,6 +21,8 @@ interface TodoState {
   user: User | null;
   authStatus: AuthStatus;
   authError: AuthError | null;
+  isGuestMode: boolean;
+  guestTasks: Task[];
   
   // UI State
   sectionFilter: TaskSection | 'All' | 'Completed';
@@ -85,6 +87,7 @@ interface TodoState {
   clearAuthError: () => void;
   fetchTasks: () => Promise<void>;
   updateUserProfile: (updates: Partial<UserProfile>) => void;
+  setGuestMode: (mode: boolean) => void;
 }
 
 const createInitialContacts = (): Contact[] => [
@@ -203,6 +206,8 @@ export const useTodoStore = create<TodoState>()(
       user: null,
       authStatus: 'loading',
       authError: null,
+      isGuestMode: false,
+      guestTasks: [],
       
       sectionFilter: 'All',
       currentPage: 'dashboard',
@@ -263,7 +268,33 @@ export const useTodoStore = create<TodoState>()(
 
       // Actions
       addTask: async (title: string, dueAt?: string | null, category?: string | null, parentId?: string | null) => {
-        const { session } = get();
+        const { session, isGuestMode, guestTasks } = get();
+        
+        if (isGuestMode) {
+          // Handle guest mode - store tasks locally
+          const newTask: Task = {
+            id: `guest-task-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+            user_id: 'guest-user',
+            title,
+            status: 'pending',
+            dueAt,
+            isStarred: false,
+            category,
+            parent_id: parentId,
+            inserted_at: new Date().toISOString(),
+            updated_at: new Date().toISOString()
+          };
+          
+          set(state => ({
+            guestTasks: [...state.guestTasks, newTask],
+            tasks: [...state.tasks, newTask],
+            syncMessage: 'Task added locally!'
+          }));
+          
+          setTimeout(() => set({ syncMessage: '' }), 3000);
+          return;
+        }
+        
         if (!session) return;
         
         set({ isLoading: true });
@@ -295,7 +326,30 @@ export const useTodoStore = create<TodoState>()(
       },
 
       toggleDone: async (taskId: string) => {
-        const { session } = get();
+        const { session, isGuestMode, guestTasks, tasks } = get();
+        
+        if (isGuestMode) {
+          // Handle guest mode - update tasks locally
+          const task = tasks.find(t => t.id === taskId);
+          if (!task) return;
+          
+          const newStatus = task.status === 'pending' ? 'done' : 'pending';
+          const updatedAt = new Date().toISOString();
+          
+          set(state => ({
+            guestTasks: state.guestTasks.map(t => 
+              t.id === taskId ? { ...t, status: newStatus, updated_at: updatedAt } : t
+            ),
+            tasks: state.tasks.map(t => 
+              t.id === taskId ? { ...t, status: newStatus, updated_at: updatedAt } : t
+            ),
+            syncMessage: 'Task updated locally!'
+          }));
+          
+          setTimeout(() => set({ syncMessage: '' }), 3000);
+          return;
+        }
+        
         if (!session) return;
         
         const task = get().tasks.find(t => t.id === taskId);
@@ -325,7 +379,26 @@ export const useTodoStore = create<TodoState>()(
       },
 
       updateTask: async (taskId: string, updates: Partial<Task>) => {
-        const { session } = get();
+        const { session, isGuestMode, tasks } = get();
+        
+        if (isGuestMode) {
+          // Handle guest mode - update tasks locally
+          const updatedAt = new Date().toISOString();
+          
+          set(state => ({
+            guestTasks: state.guestTasks.map(t => 
+              t.id === taskId ? { ...t, ...updates, updated_at: updatedAt } : t
+            ),
+            tasks: state.tasks.map(t => 
+              t.id === taskId ? { ...t, ...updates, updated_at: updatedAt } : t
+            ),
+            syncMessage: 'Task updated locally!'
+          }));
+          
+          setTimeout(() => set({ syncMessage: '' }), 3000);
+          return;
+        }
+        
         if (!session) return;
         
         set({ isLoading: true });
@@ -351,7 +424,36 @@ export const useTodoStore = create<TodoState>()(
       },
 
       deleteTask: async (taskId: string) => {
-        const { session } = get();
+        const { session, isGuestMode, tasks } = get();
+        
+        if (isGuestMode) {
+          // Handle guest mode - delete tasks locally (including subtasks)
+          const deleteTaskAndSubtasks = (tasks: Task[], taskId: string): Task[] => {
+            const subtasks = tasks.filter(t => t.parent_id === taskId);
+            let filteredTasks = tasks.filter(t => t.id !== taskId);
+            
+            subtasks.forEach(subtask => {
+              filteredTasks = deleteTaskAndSubtasks(filteredTasks, subtask.id);
+            });
+            
+            return filteredTasks;
+          };
+          
+          set(state => {
+            const updatedGuestTasks = deleteTaskAndSubtasks(state.guestTasks, taskId);
+            const updatedTasks = deleteTaskAndSubtasks(state.tasks, taskId);
+            
+            return {
+              guestTasks: updatedGuestTasks,
+              tasks: updatedTasks,
+              syncMessage: 'Task deleted locally!'
+            };
+          });
+          
+          setTimeout(() => set({ syncMessage: '' }), 3000);
+          return;
+        }
+        
         if (!session) return;
         
         set({ isLoading: true });
@@ -420,6 +522,14 @@ export const useTodoStore = create<TodoState>()(
       },
 
       syncEmails: async () => {
+        const { isGuestMode } = get();
+        
+        if (isGuestMode) {
+          set({ syncMessage: 'Email sync requires signing in' });
+          setTimeout(() => set({ syncMessage: '' }), 3000);
+          return;
+        }
+        
         set({ isLoading: true, syncMessage: 'Fetching emails...' });
         
         try {
@@ -475,7 +585,29 @@ export const useTodoStore = create<TodoState>()(
       },
 
       toggleTaskStar: async (taskId: string) => {
-        const { session } = get();
+        const { session, isGuestMode, tasks } = get();
+        
+        if (isGuestMode) {
+          // Handle guest mode - toggle star locally
+          const task = tasks.find(t => t.id === taskId);
+          if (!task) return;
+          
+          const updatedAt = new Date().toISOString();
+          
+          set(state => ({
+            guestTasks: state.guestTasks.map(t => 
+              t.id === taskId ? { ...t, isStarred: !t.isStarred, updated_at: updatedAt } : t
+            ),
+            tasks: state.tasks.map(t => 
+              t.id === taskId ? { ...t, isStarred: !t.isStarred, updated_at: updatedAt } : t
+            ),
+            syncMessage: 'Task updated locally!'
+          }));
+          
+          setTimeout(() => set({ syncMessage: '' }), 3000);
+          return;
+        }
+        
         if (!session) return;
         
         const task = get().tasks.find(t => t.id === taskId);
@@ -720,6 +852,7 @@ export const useTodoStore = create<TodoState>()(
           session,
           user: session?.user || null,
           authStatus: session ? 'authenticated' : 'unauthenticated',
+          isGuestMode: false, // Clear guest mode when setting session
           userProfile: session?.user ? {
             ...get().userProfile,
             id: session.user.id,
