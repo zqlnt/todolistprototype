@@ -832,6 +832,28 @@ VITE_SUPABASE_ANON_KEY=your_production_anon_key
 VITE_API_BASE_URL=https://your-backend-domain.com/api
 ```
 
+### Planned Features
+- **Real Email Integration**: Connect to Gmail, Outlook, Apple Mail
+- **Gemini LLM Integration**: Actual AI responses in Sentinel AI powered by Google Gemini
+- **Real-time Collaboration**: Live updates across users
+- **Mobile App**: React Native or native iOS/Android
+- **Advanced Analytics**: Productivity insights and reporting
+- **Workflow Automation**: Zapier-like task automation
+
+### AI Integration
+
+```python
+# Gemini LLM integration for Sentinel AI
+import google.generativeai as genai
+
+@router.post("/ai/chat")
+async def chat_with_ai(message: str, current_user: User = Depends(get_current_user)):
+    genai.configure(api_key=os.getenv("GEMINI_API_KEY"))
+    model = genai.GenerativeModel('gemini-pro')
+    response = await model.generate_content_async(message)
+    return {"response": response.text}
+```
+
 ## Contributing Guidelines
 
 ### Git Workflow

@@ -39,7 +39,7 @@ const SentinelAI: React.FC = () => {
       const aiMessage = {
         id: `ai-${Date.now()}`,
         type: 'ai' as const,
-        content: `I understand you're asking about "${userMessage.content}". This is a placeholder response. The actual LLM integration will be added later to provide intelligent responses about your tasks, schedule, and productivity insights.`,
+        content: `I understand you're asking about "${userMessage.content}". This is a placeholder response. The actual Gemini LLM integration will be added later to provide intelligent responses about your tasks, schedule, and productivity insights.`,
         timestamp: new Date().toISOString()
       };
       
@@ -82,7 +82,7 @@ const SentinelAI: React.FC = () => {
               </div>
             </div>
             <p className="text-xs sm:text-sm text-neutral-600">
-              Your intelligent productivity assistant powered by advanced AI
+              Your intelligent productivity assistant powered by Google Gemini
             </p>
           </div>
 

@@ -763,7 +763,7 @@ print(tasks_response.json())
 ### Integration Endpoints
 - **Calendar sync** endpoints for external calendar providers
 - **Email provider** integration (Gmail, Outlook)
-- **AI chat** endpoints for LLM integration
+- **AI chat** endpoints for Gemini LLM integration
 - **Webhook** endpoints for external service notifications
 
 This comprehensive API documentation provides all the information needed to integrate with the Sentinel FastAPI backend, from basic authentication through advanced task management and email synchronization features.
