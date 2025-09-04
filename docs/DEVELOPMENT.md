@@ -431,12 +431,27 @@ export default ComponentName;
 **Zustand Store Design**:
 ```typescript
 interface TodoState {
-  // Data (from backend)
+  // Data State
   tasks: Task[];
+  suggestedTasks: Task[];
+  emails: Email[];
+  contacts: Contact[];
+  chats: Chat[];
+  notifications: Notification[];
   
-  // UI State (local only)
+  // UI State
   currentPage: AppPage;
+  sectionFilter: string;
+  showPriorityOnly: boolean;
+  viewMode: 'list' | 'grid';
+  taskGroupingMode: 'time' | 'category';
   isLoading: boolean;
+  
+  // Authentication State
+  session: Session | null;
+  user: User | null;
+  authStatus: 'loading' | 'authenticated' | 'unauthenticated';
+  userProfile: UserProfile | null;
   
   // Actions (async operations)
   addTask: (title: string) => Promise<void>;
