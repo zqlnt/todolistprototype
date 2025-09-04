@@ -9,7 +9,7 @@ Sentinel uses a three-tier architecture:
 - **Frontend**: React 18 + TypeScript + Vite + Tailwind CSS
 - **Backend API**: Python FastAPI + Pydantic + Uvicorn
 - **Database**: Supabase (PostgreSQL with Row Level Security)
-- **Authentication**: Supabase Auth managed through FastAPI endpoints
+- **Authentication**: Hybrid system (JWT + Session middleware for merge compatibility)
 - **State Management**: Zustand with persistence
 - **UI Components**: Custom components with Lucide React icons
 
@@ -23,6 +23,7 @@ Instead of connecting React directly to Supabase, we use FastAPI as an intermedi
 - **Scalability**: Easy integration with external services and caching
 - **Type Safety**: Pydantic models ensure data validation
 - **Performance**: One of the fastest Python frameworks available
+- **Merge Compatibility**: Session middleware support for seamless integration with other repositories
 
 ## Project Structure
 
@@ -33,6 +34,7 @@ sentinel/
 │   │   ├── auth.py           # Authentication endpoints
 │   │   ├── tasks.py          # Task management endpoints
 │   │   └── emails.py         # Email sync endpoints
+│   ├── auth_utils.py         # Hybrid authentication utilities
 │   ├── models.py             # Pydantic data models
 │   ├── database.py           # Supabase client configuration
 │   ├── main.py               # FastAPI application setup
@@ -51,6 +53,25 @@ sentinel/
 └── package.json            # Frontend dependencies and scripts
 ```
 
+## Merge Compatibility Features
+
+This project has been prepared for seamless merging with other repositories through:
+
+### Session Middleware Support
+- **Starlette SessionMiddleware**: Added for session-based authentication compatibility
+- **Hybrid Authentication**: Supports both JWT tokens and session-based auth
+- **Request Object Integration**: All routes accept `Request` objects for session access
+
+### Router Structure Alignment
+- **Prefix Integration**: Routers define their own prefixes and tags
+- **Compatible Endpoints**: API structure matches common FastAPI patterns
+- **Merge Test Endpoint**: `/api/tasks/merge-compatibility-test` for verification
+
+### Environment Variables
+- **Session Configuration**: `SESSION_SECRET_KEY`, `REDIRECT_URI`, `FAST_SECRET`
+- **Flexible Setup**: Compatible with both standalone and merged configurations
+- **Backward Compatibility**: All existing functionality preserved
+
 ## Features
 
 ### Core Functionality
@@ -59,6 +80,7 @@ sentinel/
 - **Priority System**: Star important tasks for quick filtering
 - **Due Date Management**: Optional deadlines with time tracking
 - **Real-time Sync**: Changes reflected immediately across sessions
+- **Hybrid Authentication**: JWT and session-based auth support
 
 ### Multi-Platform Integration
 - **Email Sync**: Mock email fetching with task suggestions (ready for real providers)
@@ -121,6 +143,9 @@ SUPABASE_URL=your_supabase_project_url
 SUPABASE_SERVICE_ROLE_KEY=your_supabase_service_role_key
 USE_FALLBACK_DB=false
 SECRET_KEY=your-secret-key-change-in-production
+SESSION_SECRET_KEY=your-session-secret-key-min-32-chars-long
+REDIRECT_URI=http://localhost:8000/auth/oauth2callback
+FAST_SECRET=your-session-secret-same-as-above
 ```
 
 #### Option B: Use SQLite Fallback Database (Quick Start)
@@ -131,6 +156,7 @@ If you don't have Supabase set up or want to test quickly, you can use the built
 # Leave Supabase variables empty or remove them
 USE_FALLBACK_DB=true
 SECRET_KEY=your-secret-key-change-in-production
+SESSION_SECRET_KEY=your-session-secret-key-min-32-chars-long
 ```
 
 The SQLite database will be automatically created as `sentinel_fallback.db` in the backend directory.
@@ -179,6 +205,7 @@ python run.py
 ```
 ✅ Backend running at `http://localhost:8000`
 ✅ Database: Will show "Using Supabase database" or "Using SQLite fallback database"
+✅ Merge compatibility: Test at `http://localhost:8000/api/tasks/merge-compatibility-test`
 
 **Terminal 2 - Frontend (React):**
 ```bash
@@ -195,6 +222,22 @@ This runs both frontend and backend concurrently.
 ### 6. Access the Application
 
 Open your browser to `http://localhost:5173` and create an account or sign in.
+
+### 7. Verify Merge Compatibility
+
+Test the merge compatibility setup:
+```bash
+curl http://localhost:8000/api/tasks/merge-compatibility-test
+```
+
+Expected response:
+```json
+{
+  "session_middleware": true,
+  "current_auth": "working", 
+  "ready_for_merge": true
+}
+```
 
 ## Database Options
 

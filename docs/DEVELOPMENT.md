@@ -88,6 +88,7 @@ This runs both frontend and backend concurrently using the `concurrently` packag
 ```
 backend/
 ├── main.py              # FastAPI app setup, middleware, CORS
+├── auth_utils.py        # Hybrid authentication utilities
 ├── database.py          # Supabase client configuration
 ├── models.py            # Pydantic data models
 ├── routers/
@@ -98,6 +99,50 @@ backend/
 ├── requirements.txt     # Python dependencies
 ├── run.py              # Development server runner
 └── .env.example        # Environment template
+```
+
+#### Merge Compatibility Features
+
+The backend includes several features designed for seamless merging with other repositories:
+
+**Session Middleware Support:**
+```python
+# Added to main.py
+from starlette.middleware.sessions import SessionMiddleware
+
+app.add_middleware(
+    SessionMiddleware,
+    secret_key=os.getenv('SESSION_SECRET_KEY'),
+    same_site='lax',
+    https_only=False
+)
+```
+
+**Hybrid Authentication:**
+```python
+# auth_utils.py - supports both JWT and session auth
+async def get_current_user_flexible(request: Request, credentials: HTTPAuthorizationCredentials):
+    # Try JWT first (current system)
+    try:
+        return validate_jwt_user(credentials)
+    except:
+        # Session fallback (for merge compatibility)
+        session_data = request.session.get('credentials')
+        if session_data:
+            return create_user_from_session(session_data)
+        raise HTTPException(401, "Authentication required")
+```
+
+**Router Structure Alignment:**
+```python
+# Routers now define their own prefixes
+router = APIRouter(prefix="/api/tasks", tags=["tasks"])
+
+# All routes accept Request objects
+@router.get("/")
+async def list_tasks(request: Request, current_user: User = Depends(get_current_user_flexible)):
+    # Implementation
+    pass
 ```
 
 #### Adding New API Endpoints
@@ -121,17 +166,17 @@ class NewFeature(NewFeatureBase):
 ```python
 from fastapi import APIRouter, Depends, HTTPException
 from models import NewFeature, NewFeatureCreate
-from main import get_current_user
+from auth_utils import get_current_user_flexible
 
-router = APIRouter()
+router = APIRouter(prefix="/api/new-feature", tags=["new-feature"])
 
 @router.get("/", response_model=List[NewFeature])
-async def list_features(current_user: User = Depends(get_current_user)):
+async def list_features(request: Request, current_user: User = Depends(get_current_user_flexible)):
     # Implementation here
     pass
 
 @router.post("/", response_model=NewFeature)
-async def create_feature(feature: NewFeatureCreate, current_user: User = Depends(get_current_user)):
+async def create_feature(request: Request, feature: NewFeatureCreate, current_user: User = Depends(get_current_user_flexible)):
     # Implementation here
     pass
 ```
@@ -140,10 +185,25 @@ async def create_feature(feature: NewFeatureCreate, current_user: User = Depends
 ```python
 from routers import new_feature
 
-app.include_router(new_feature.router, prefix="/api/new-feature", tags=["new-feature"])
+app.include_router(new_feature.router)
 ```
 
 4. **Test with Swagger UI** at `http://localhost:8000/docs`
+
+#### Merge Compatibility Testing
+
+Test the merge compatibility setup:
+```bash
+# Test compatibility endpoint
+curl http://localhost:8000/api/tasks/merge-compatibility-test
+
+# Expected response:
+{
+  "session_middleware": true,
+  "current_auth": "working",
+  "ready_for_merge": true
+}
+```
 
 #### Database Operations
 
@@ -169,7 +229,7 @@ response = supabase_client.table('table_name').delete().eq('id', item_id).execut
 
 ```python
 @router.post("/tasks/")
-async def create_task(task: TaskCreate, current_user: User = Depends(get_current_user)):
+async def create_task(request: Request, task: TaskCreate, current_user: User = Depends(get_current_user_flexible)):
     try:
         # Database operation
         response = supabase_client.table('tasks').insert(task_data).execute()
@@ -191,19 +251,14 @@ async def create_task(task: TaskCreate, current_user: User = Depends(get_current
 #### Authentication Middleware
 
 ```python
-from fastapi.security import HTTPBearer
-from fastapi import Depends, HTTPException
+from auth_utils import get_current_user_flexible
+from fastapi import Request, Depends
 
-security = HTTPBearer()
-
-async def get_current_user(credentials: HTTPAuthorizationCredentials = Depends(security)) -> User:
-    try:
-        response = supabase_client.auth.get_user(credentials.credentials)
-        if response.user is None:
-            raise HTTPException(status_code=401, detail="Invalid token")
-        return User(id=response.user.id, email=response.user.email)
-    except Exception:
-        raise HTTPException(status_code=401, detail="Invalid token")
+# Use the hybrid authentication function
+@router.get("/protected-endpoint")
+async def protected_route(request: Request, current_user: User = Depends(get_current_user_flexible)):
+    # Route implementation
+    pass
 ```
 
 ### Frontend Development (React + TypeScript)

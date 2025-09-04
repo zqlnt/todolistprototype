@@ -11,17 +11,21 @@ This document describes the FastAPI backend API for the Sentinel productivity ap
 
 ## Authentication
 
-The API uses JWT (JSON Web Token) based authentication. All protected endpoints require a valid JWT token in the Authorization header.
+The API uses a hybrid authentication system supporting both JWT tokens and session-based authentication for merge compatibility. All protected endpoints require valid authentication credentials.
 
 ### Authentication Header
 ```http
 Authorization: Bearer <jwt_token>
 ```
 
+### Session Authentication
+For merge compatibility, the API also supports session-based authentication through cookies and session middleware.
+
 ### Token Management
 - Tokens are obtained through the `/auth/signin` or `/auth/signup` endpoints
 - Tokens should be included in all subsequent API requests
 - Tokens expire and need to be refreshed (handled automatically by the frontend)
+- Session credentials are managed through secure session middleware
 
 ## API Documentation
 
@@ -31,6 +35,7 @@ With the FastAPI backend running, access the interactive API documentation:
 - **Swagger UI**: `http://localhost:8000/docs`
 - **ReDoc**: `http://localhost:8000/redoc`
 - **OpenAPI JSON**: `http://localhost:8000/openapi.json`
+- **Merge Compatibility Test**: `http://localhost:8000/api/tasks/merge-compatibility-test`
 
 ## Authentication Endpoints
 
@@ -185,6 +190,25 @@ Authorization: Bearer <jwt_token>
 - `200 OK` - Tasks retrieved successfully
 - `401 Unauthorized` - Invalid or missing token
 - `500 Internal Server Error` - Database error
+
+### Merge Compatibility Test
+```http
+GET /api/tasks/merge-compatibility-test
+```
+
+Test endpoint to verify merge compatibility setup.
+
+**Response:**
+```json
+{
+  "session_middleware": true,
+  "current_auth": "working",
+  "ready_for_merge": true
+}
+```
+
+**Status Codes:**
+- `200 OK` - Compatibility test successful
 
 ### Create Task
 ```http

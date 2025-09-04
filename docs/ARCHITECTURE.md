@@ -83,6 +83,7 @@ interface TodoState {
 ```
 backend/
 ├── main.py              # FastAPI app setup, middleware, CORS
+├── auth_utils.py        # Hybrid authentication utilities
 ├── database.py          # Supabase client configuration
 ├── models.py            # Pydantic data models
 ├── routers/
@@ -93,10 +94,57 @@ backend/
 └── run.py              # Development server runner
 ```
 
+### Merge Compatibility Architecture
+
+The backend has been designed for seamless integration with other repositories:
+
+#### Session Middleware Integration
+```python
+# Session middleware for merge compatibility
+app.add_middleware(
+    SessionMiddleware,
+    secret_key=os.getenv('SESSION_SECRET_KEY'),
+    same_site='lax',
+    https_only=False
+)
+```
+
+#### Hybrid Authentication System
+```python
+async def get_current_user_flexible(request: Request, credentials: HTTPAuthorizationCredentials):
+    """
+    Compatible auth function that supports:
+    - JWT token authentication (current system)
+    - Session-based authentication (for merge compatibility)
+    """
+    # Try JWT first
+    try:
+        # JWT validation logic
+        return jwt_user
+    except:
+        # Session fallback
+        session_data = request.session.get('credentials')
+        if session_data:
+            return session_user
+        raise HTTPException(401, "Authentication required")
+```
+
+#### Router Structure Alignment
+```python
+# Routers define their own prefixes and tags
+router = APIRouter(prefix="/api/tasks", tags=["tasks"])
+
+# All routes accept Request objects for session access
+@router.get("/")
+async def list_tasks(request: Request, current_user: User = Depends(get_current_user_flexible)):
+    # Route implementation
+    pass
+```
+
 ### Request/Response Flow
 
 1. **Client Request**: React frontend sends HTTP request to FastAPI
-2. **Authentication**: FastAPI validates JWT token from request headers
+2. **Authentication**: FastAPI validates JWT token or session credentials
 3. **Data Validation**: Pydantic models validate request data
 4. **Business Logic**: FastAPI processes the request
 5. **Database Operation**: FastAPI communicates with Supabase
@@ -120,6 +168,7 @@ PUT    /{task_id}     # Update task
 DELETE /{task_id}     # Delete task
 PUT    /{task_id}/status  # Toggle completion
 PUT    /{task_id}/star    # Toggle priority
+GET    /merge-compatibility-test  # Verify merge setup
 ```
 
 #### Email Routes (`/api/emails/`)

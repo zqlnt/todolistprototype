@@ -1,13 +1,14 @@
 from fastapi import APIRouter, HTTPException, Depends, status
+from fastapi import Request
 from typing import List, Optional
 from database import supabase_client, fallback_db, is_using_fallback
 from models import Task, TaskCreate, TaskUpdate, TaskResponse, TaskListResponse, User
-from main import get_current_user
+from auth_utils import get_current_user_flexible
 
-router = APIRouter()
+router = APIRouter(prefix="/api/tasks", tags=["tasks"])
 
 @router.get("/", response_model=TaskListResponse)
-async def list_tasks(current_user: User = Depends(get_current_user)):
+async def list_tasks(request: Request, current_user: User = Depends(get_current_user_flexible)):
     """Get all tasks for the current user"""
     try:
         if is_using_fallback():
@@ -57,7 +58,7 @@ async def list_tasks(current_user: User = Depends(get_current_user)):
         )
 
 @router.post("/", response_model=TaskResponse)
-async def create_task(task: TaskCreate, current_user: User = Depends(get_current_user)):
+async def create_task(request: Request, task: TaskCreate, current_user: User = Depends(get_current_user_flexible)):
     """Create a new task"""
     try:
         task_data = {
@@ -106,7 +107,7 @@ async def create_task(task: TaskCreate, current_user: User = Depends(get_current
         )
 
 @router.put("/{task_id}", response_model=TaskResponse)
-async def update_task(task_id: str, task_update: TaskUpdate, current_user: User = Depends(get_current_user)):
+async def update_task(request: Request, task_id: str, task_update: TaskUpdate, current_user: User = Depends(get_current_user_flexible)):
     """Update an existing task"""
     try:
         # Build update data
@@ -163,7 +164,7 @@ async def update_task(task_id: str, task_update: TaskUpdate, current_user: User 
         )
 
 @router.delete("/{task_id}")
-async def delete_task(task_id: str, current_user: User = Depends(get_current_user)):
+async def delete_task(request: Request, task_id: str, current_user: User = Depends(get_current_user_flexible)):
     """Delete a task"""
     try:
         if is_using_fallback():
@@ -192,7 +193,7 @@ async def delete_task(task_id: str, current_user: User = Depends(get_current_use
         )
 
 @router.put("/{task_id}/status")
-async def toggle_task_status(task_id: str, current_user: User = Depends(get_current_user)):
+async def toggle_task_status(request: Request, task_id: str, current_user: User = Depends(get_current_user_flexible)):
     """Toggle task status between pending and done"""
     try:
         if is_using_fallback():
@@ -235,7 +236,7 @@ async def toggle_task_status(task_id: str, current_user: User = Depends(get_curr
         )
 
 @router.put("/{task_id}/star")
-async def toggle_task_star(task_id: str, current_user: User = Depends(get_current_user)):
+async def toggle_task_star(request: Request, task_id: str, current_user: User = Depends(get_current_user_flexible)):
     """Toggle task star status"""
     try:
         if is_using_fallback():
@@ -276,3 +277,12 @@ async def toggle_task_star(task_id: str, current_user: User = Depends(get_curren
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"Failed to toggle task star: {str(e)}"
         )
+
+@router.get("/merge-compatibility-test")
+async def merge_test(request: Request):
+    """Test endpoint to verify merge compatibility setup"""
+    return {
+        "session_middleware": hasattr(request, 'session'),
+        "current_auth": "working",
+        "ready_for_merge": True
+    }

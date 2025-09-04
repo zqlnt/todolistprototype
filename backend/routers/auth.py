@@ -1,16 +1,15 @@
 from fastapi import APIRouter, HTTPException, status
+from fastapi import Request
 from pydantic import BaseModel
 from database import supabase_client, fallback_db, is_using_fallback
+from auth_utils import SECRET_KEY, ALGORITHM
 import hashlib
 import jwt
 from datetime import datetime, timedelta
 import os
 
-router = APIRouter()
+router = APIRouter(prefix="/api/auth", tags=["authentication"])
 
-# JWT configuration
-SECRET_KEY = os.getenv("SECRET_KEY", "your-secret-key-change-in-production")
-ALGORITHM = "HS256"
 ACCESS_TOKEN_EXPIRE_MINUTES = 30
 
 class SignInRequest(BaseModel):
@@ -43,13 +42,13 @@ def verify_password(plain_password: str, hashed_password: str) -> bool:
     return hash_password(plain_password) == hashed_password
 
 @router.post("/signin", response_model=AuthResponse)
-async def sign_in(request: SignInRequest):
+async def sign_in(request: Request, signin_request: SignInRequest):
     """Sign in user with email and password"""
     try:
         if is_using_fallback():
             # Use fallback database
-            user = fallback_db.get_user_by_email(request.email)
-            if not user or not verify_password(request.password, user['password_hash']):
+            user = fallback_db.get_user_by_email(signin_request.email)
+            if not user or not verify_password(signin_request.password, user['password_hash']):
                 raise HTTPException(
                     status_code=status.HTTP_401_UNAUTHORIZED,
                     detail="Invalid credentials"
@@ -67,8 +66,8 @@ async def sign_in(request: SignInRequest):
         else:
             # Use Supabase
             response = supabase_client.auth.sign_in_with_password({
-                "email": request.email,
-                "password": request.password
+                "email": signin_request.email,
+                "password": signin_request.password
             })
             
             if response.user is None:
@@ -94,12 +93,12 @@ async def sign_in(request: SignInRequest):
         )
 
 @router.post("/signup", response_model=AuthResponse)
-async def sign_up(request: SignUpRequest):
+async def sign_up(request: Request, signup_request: SignUpRequest):
     """Sign up new user with email and password"""
     try:
         if is_using_fallback():
             # Check if user already exists
-            existing_user = fallback_db.get_user_by_email(request.email)
+            existing_user = fallback_db.get_user_by_email(signup_request.email)
             if existing_user:
                 raise HTTPException(
                     status_code=status.HTTP_400_BAD_REQUEST,
@@ -107,8 +106,8 @@ async def sign_up(request: SignUpRequest):
                 )
             
             # Create new user
-            password_hash = hash_password(request.password)
-            user = fallback_db.create_user(request.email, password_hash)
+            password_hash = hash_password(signup_request.password)
+            user = fallback_db.create_user(signup_request.email, password_hash)
             
             access_token = create_access_token(data={"sub": user['id'], "email": user['email']})
             return AuthResponse(
@@ -118,8 +117,8 @@ async def sign_up(request: SignUpRequest):
         else:
             # Use Supabase
             response = supabase_client.auth.sign_up({
-                "email": request.email,
-                "password": request.password
+                "email": signup_request.email,
+                "password": signup_request.password
             })
             
             if response.user is None:
@@ -153,7 +152,7 @@ async def sign_up(request: SignUpRequest):
         )
 
 @router.post("/signout")
-async def sign_out():
+async def sign_out(request: Request):
     """Sign out current user"""
     try:
         if not is_using_fallback():
@@ -166,7 +165,7 @@ async def sign_out():
         )
 
 @router.get("/user")
-async def get_user(token: str):
+async def get_user(request: Request, token: str):
     """Get user information from token"""
     try:
         if is_using_fallback():

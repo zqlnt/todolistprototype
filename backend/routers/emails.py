@@ -1,11 +1,12 @@
 from fastapi import APIRouter, HTTPException, Depends, status
+from fastapi import Request
 from typing import List
 from datetime import datetime, timedelta
 import uuid
 from models import Email, SuggestedTask, EmailSyncResponse, User
-from main import get_current_user
+from auth_utils import get_current_user_flexible
 
-router = APIRouter()
+router = APIRouter(prefix="/api/emails", tags=["emails"])
 
 # Mock email data - replace with actual email provider integration
 def generate_mock_emails() -> List[Email]:
@@ -108,7 +109,7 @@ def generate_task_suggestions(emails: List[Email]) -> List[SuggestedTask]:
     return suggestions
 
 @router.get("/", response_model=List[Email])
-async def get_emails(current_user: User = Depends(get_current_user)):
+async def get_emails(request: Request, current_user: User = Depends(get_current_user_flexible)):
     """Get user's emails"""
     try:
         # In a real implementation, this would fetch from email providers
@@ -121,7 +122,7 @@ async def get_emails(current_user: User = Depends(get_current_user)):
         )
 
 @router.post("/sync", response_model=EmailSyncResponse)
-async def sync_emails(current_user: User = Depends(get_current_user)):
+async def sync_emails(request: Request, current_user: User = Depends(get_current_user_flexible)):
     """Sync emails and generate task suggestions"""
     try:
         # Simulate email fetching delay
@@ -145,7 +146,7 @@ async def sync_emails(current_user: User = Depends(get_current_user)):
         )
 
 @router.get("/suggestions", response_model=List[SuggestedTask])
-async def get_email_suggestions(current_user: User = Depends(get_current_user)):
+async def get_email_suggestions(request: Request, current_user: User = Depends(get_current_user_flexible)):
     """Get task suggestions from emails"""
     try:
         emails = generate_mock_emails()

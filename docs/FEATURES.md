@@ -125,10 +125,11 @@
 ### 1. FastAPI Backend
 
 #### Authentication API
-- **JWT Token Management**: Secure token-based authentication
+- **Hybrid Authentication**: JWT tokens + session middleware for merge compatibility
 - **User Registration**: Account creation with email/password
 - **Session Management**: Login/logout functionality
 - **User Profile**: Get and update user information
+- **Merge Compatibility**: Session-based auth fallback for repository integration
 
 #### Task Management API
 - **CRUD Operations**: Create, Read, Update, Delete tasks
@@ -136,12 +137,27 @@
 - **Status Management**: Toggle completion status
 - **Priority Management**: Star/unstar tasks
 - **Category Management**: Organize tasks by categories
+- **Compatibility Testing**: Merge verification endpoint
 
 #### Email Integration API
 - **Mock Email Sync**: Simulated email fetching
 - **Task Suggestions**: Generate tasks from email content
 - **Suggestion Management**: Accept or dismiss suggestions
 - **Email Parsing**: Extract actionable items from emails
+
+### 2. Merge Compatibility Features
+
+#### Session Middleware Support
+- **Starlette Integration**: Session middleware for compatibility
+- **Request Object Access**: All routes support session data
+- **Hybrid Auth Flow**: JWT primary, session fallback
+- **Environment Configuration**: Flexible setup for different deployment scenarios
+
+#### Router Structure Alignment
+- **Self-contained Prefixes**: Routers define their own API paths
+- **Tag Organization**: Consistent API documentation structure
+- **Request Parameter Support**: All endpoints accept Request objects
+- **Compatibility Testing**: Built-in verification endpoints
 
 ### 2. Data Validation
 
@@ -150,12 +166,14 @@
 - **Data Serialization**: Consistent JSON formatting
 - **Error Handling**: Clear validation error messages
 - **Field Aliases**: Frontend-backend field name mapping
+- **Merge Compatibility**: Flexible model structure for integration
 
 #### Input Sanitization
 - **SQL Injection Prevention**: Parameterized queries
 - **XSS Protection**: Input validation and escaping
 - **Data Length Limits**: Prevent oversized requests
 - **Type Validation**: Ensure correct data types
+- **Session Data Validation**: Secure session credential handling
 
 ### 3. Performance Features
 
