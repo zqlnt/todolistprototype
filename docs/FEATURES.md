@@ -58,7 +58,6 @@
 - **Source Tracking**: Link tasks back to originating emails
 
 #### Calendar Integration
-- **Event Display**: View calendar events alongside tasks
 - **Date Navigation**: Month view with event indicators
 - **Task Scheduling**: Tasks with due dates appear on calendar
 - **Event Creation**: Add calendar events (future)
@@ -67,14 +66,12 @@
 ### 4. Contact Management
 
 #### Contact Storage
-- **Personal Information**: Name, role, company
 - **Contact Methods**: Multiple phones and emails
 - **Profile Pictures**: Avatar support with fallback
 - **Favorites**: Star important contacts
 - **Search**: Find contacts by name, company, or role
 
 #### Contact Features
-- **Add Contacts**: Create new contact entries
 - **Edit Contacts**: Modify contact information
 - **Delete Contacts**: Remove contacts
 - **Favorite Toggle**: Mark/unmark as favorite
@@ -83,14 +80,12 @@
 ### 5. Communication Hub
 
 #### Chat System
-- **Conversation List**: All chat conversations
 - **Unread Indicators**: Badge counts for new messages
 - **Pin Conversations**: Keep important chats at top
 - **Mute Conversations**: Disable notifications
 - **Search Chats**: Find conversations by name or content
 
 #### Notification Center
-- **Unified Notifications**: All app notifications in one place
 - **Type Filtering**: Filter by task, calendar, chat, or system notifications
 - **Read Status**: Track read/unread notifications
 - **Bulk Actions**: Mark all as read

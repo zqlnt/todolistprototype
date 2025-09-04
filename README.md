@@ -84,10 +84,6 @@ This project has been prepared for seamless merging with other repositories thro
 
 ### Multi-Platform Integration
 - **Email Sync**: Mock email fetching with task suggestions (ready for real providers)
-- **Calendar Integration**: View tasks alongside calendar events
-- **Contact Management**: Store and organize contacts with favorites
-- **Chat System**: Messaging interface with unread indicators
-- **Notifications**: System-wide notification management
 
 ### Intelligent Features
 - **AI Assistant**: Sentinel AI chat interface (ready for LLM integration)
