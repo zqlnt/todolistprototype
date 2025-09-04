@@ -109,7 +109,6 @@ const Sidebar: React.FC = () => {
           />
           <h1 className="text-xl font-bold text-gray-900">Sentinel</h1>
         </div>
-        <p className="text-xs text-gray-500 mt-2 ml-11">Powered by Watermelon AI</p>
       </div>
       
       {/* Navigation */}

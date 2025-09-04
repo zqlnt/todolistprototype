@@ -85,7 +85,6 @@ const Auth: React.FC = () => {
               />
               <h1 className="text-3xl font-bold text-neutral-900">Sentinel</h1>
             </div>
-            <p className="text-sm text-neutral-500 mb-3">Presented by Watermelon AI</p>
             <p className="text-neutral-600 mb-6">Your intelligent productivity assistant</p>
           </div>
 

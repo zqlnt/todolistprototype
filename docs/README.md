@@ -1,4 +1,4 @@
-# Sentinel - Presented by Watermelon AI
+# Sentinel - Smart Productivity Application
 
 ## Overview
 
