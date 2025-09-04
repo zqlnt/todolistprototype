@@ -18,7 +18,7 @@ import { useTodoStore } from './store';
 import { apiService } from './services/api';
 
 function App() {
-  const { currentPage, isSidebarOpen, authStatus, session, setSession } = useTodoStore();
+  const { currentPage, isSidebarOpen, authStatus, session, setSession, isGuestMode } = useTodoStore();
 
   useEffect(() => {
     // Check for existing token/session on app load
@@ -64,7 +64,7 @@ function App() {
   }
 
   // Show auth page if not authenticated
-  if (authStatus === 'unauthenticated' || !session) {
+  if ((authStatus === 'unauthenticated' || !session) && !isGuestMode) {
     return <Auth />;
   }
 

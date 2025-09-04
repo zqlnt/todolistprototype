@@ -28,7 +28,9 @@ const Sidebar: React.FC = () => {
     addCategory,
     tasks,
     signOut,
-    userProfile
+    userProfile,
+    isGuestMode,
+    setGuestMode
   } = useTodoStore();
   
   const [expandedCategories, setExpandedCategories] = useState<string[]>(['Building project', 'Pharmacy plan']);
@@ -369,25 +371,47 @@ const Sidebar: React.FC = () => {
       
       {/* User Profile and Logout */}
       <div className="p-4 border-t border-gray-200">
-        <div className="flex items-center space-x-3 mb-3">
-          <div className="w-8 h-8 bg-neutral-200 rounded-full flex items-center justify-center">
-            <span className="text-sm font-medium text-neutral-600">
-              {userProfile.name ? userProfile.name.charAt(0).toUpperCase() : 'U'}
-            </span>
+        {isGuestMode ? (
+          <div className="flex items-center space-x-3 mb-3">
+            <div className="w-8 h-8 bg-neutral-200 rounded-full flex items-center justify-center">
+              <span className="text-sm font-medium text-neutral-600">G</span>
+            </div>
+            <div className="flex-1 min-w-0">
+              <p className="text-sm font-medium text-gray-900">Guest User</p>
+              <p className="text-xs text-gray-500">Local storage only</p>
+            </div>
           </div>
-          <div className="flex-1 min-w-0">
-            <p className="text-sm font-medium text-gray-900 truncate">{userProfile.name}</p>
-            <p className="text-xs text-gray-500 truncate">{userProfile.email}</p>
+        ) : (
+          <div className="flex items-center space-x-3 mb-3">
+            <div className="w-8 h-8 bg-neutral-200 rounded-full flex items-center justify-center">
+              <span className="text-sm font-medium text-neutral-600">
+                {userProfile.name ? userProfile.name.charAt(0).toUpperCase() : 'U'}
+              </span>
+            </div>
+            <div className="flex-1 min-w-0">
+              <p className="text-sm font-medium text-gray-900 truncate">{userProfile.name}</p>
+              <p className="text-xs text-gray-500 truncate">{userProfile.email}</p>
+            </div>
           </div>
-        </div>
+        )}
         
-        <button
-          onClick={signOut}
-          className="w-full flex items-center space-x-3 px-3 py-2 rounded-lg text-sm text-gray-700 hover:bg-red-50 hover:text-red-700 transition-colors"
-        >
-          <LogOut size={16} />
-          <span>Sign Out</span>
-        </button>
+        {isGuestMode ? (
+          <button
+            onClick={() => setGuestMode(false)}
+            className="w-full flex items-center space-x-3 px-3 py-2 rounded-lg text-sm text-gray-700 hover:bg-indigo-50 hover:text-indigo-700 transition-colors"
+          >
+            <LogOut size={16} />
+            <span>Sign In</span>
+          </button>
+        ) : (
+          <button
+            onClick={signOut}
+            className="w-full flex items-center space-x-3 px-3 py-2 rounded-lg text-sm text-gray-700 hover:bg-red-50 hover:text-red-700 transition-colors"
+          >
+            <LogOut size={16} />
+            <span>Sign Out</span>
+          </button>
+        )}
       </div>
     </div>
   );

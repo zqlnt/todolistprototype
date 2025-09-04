@@ -33,7 +33,8 @@ const Dashboard: React.FC = () => {
     toggleDone,
     setCurrentPage,
     dashboardWidgets,
-    categories
+    categories,
+    isGuestMode
   } = useTodoStore();
 
   const [newTaskTitle, setNewTaskTitle] = React.useState('');

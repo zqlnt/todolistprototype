@@ -14,7 +14,8 @@ const Header: React.FC = () => {
     setViewMode,
     taskGroupingMode,
     setTaskGroupingMode,
-    currentPage
+    currentPage,
+    isGuestMode
   } = useTodoStore();
 
   const getPageTitle = () => {
@@ -62,14 +63,16 @@ const Header: React.FC = () => {
         
         {/* Right - Sync and Filter */}
         <div className="flex items-center space-x-2">
-          <button
-            onClick={syncEmails}
-            disabled={isLoading}
-            className="p-2 hover:bg-neutral-100 rounded-lg transition-colors disabled:opacity-50"
-            title="Sync emails"
-          >
-            <RefreshCw size={18} className={`text-neutral-700 ${isLoading ? 'animate-spin' : ''}`} />
-          </button>
+          {!isGuestMode && (
+            <button
+              onClick={syncEmails}
+              disabled={isLoading}
+              className="p-2 hover:bg-neutral-100 rounded-lg transition-colors disabled:opacity-50"
+              title="Sync emails"
+            >
+              <RefreshCw size={18} className={`text-neutral-700 ${isLoading ? 'animate-spin' : ''}`} />
+            </button>
+          )}
           <button className="p-2 hover:bg-neutral-100 rounded-lg transition-colors">
             <Filter size={18} className="text-neutral-700" />
           </button>

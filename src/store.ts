@@ -23,6 +23,8 @@ interface TodoState {
   authError: AuthError | null;
   isGuestMode: boolean;
   guestTasks: Task[];
+  isGuestMode: boolean;
+  guestTasks: Task[];
   
   // UI State
   sectionFilter: TaskSection | 'All' | 'Completed';
@@ -87,6 +89,7 @@ interface TodoState {
   clearAuthError: () => void;
   fetchTasks: () => Promise<void>;
   updateUserProfile: (updates: Partial<UserProfile>) => void;
+  setGuestMode: (mode: boolean) => void;
   setGuestMode: (mode: boolean) => void;
 }
 
@@ -905,6 +908,20 @@ export const useTodoStore = create<TodoState>()(
           userProfile: { ...state.userProfile, ...updates }
         }));
       },
+      
+      setGuestMode: (mode: boolean) => {
+        set({ 
+          isGuestMode: mode,
+          authStatus: mode ? 'authenticated' : 'unauthenticated',
+          currentPage: mode ? 'dashboard' : 'dashboard'
+        });
+        
+        if (mode) {
+          // When entering guest mode, populate tasks from guestTasks
+          const { guestTasks } = get();
+          set({ tasks: [...guestTasks] });
+        }
+      },
     }),
     {
       name: 'smart-todo-storage',
@@ -914,7 +931,9 @@ export const useTodoStore = create<TodoState>()(
         categories: state.categories,
         userProfile: state.userProfile,
         notificationSettings: state.notificationSettings,
-        emailSettings: state.emailSettings
+        emailSettings: state.emailSettings,
+        isGuestMode: state.isGuestMode,
+        guestTasks: state.guestTasks
       }),
     }
   )

@@ -226,6 +226,22 @@ const Auth: React.FC = () => {
               </button>
             </p>
           </div>
+          
+          {/* Continue as Guest */}
+          <div className="mt-4 text-center">
+            <button
+              onClick={() => {
+                useTodoStore.getState().setGuestMode(true);
+              }}
+              disabled={isLoading}
+              className="text-sm text-neutral-500 hover:text-neutral-700 underline disabled:opacity-50"
+            >
+              Continue as Guest
+            </button>
+            <p className="text-xs text-neutral-400 mt-1">
+              Explore the app without an account. Your data will be stored locally.
+            </p>
+          </div>
         </div>
       </div>
     </div>
