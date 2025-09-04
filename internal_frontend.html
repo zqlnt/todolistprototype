@@ -1,0 +1,899 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Sentinel - Smart To-Do List</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-100 h-screen flex relative">
+  <!-- Sidebar -->
+  <aside class="bg-gray-900 text-white w-56 p-6 flex flex-col">
+    <div class="flex items-center justify-between mb-6">
+      <h1 class="text-2xl font-bold">Sentinel</h1>
+      <button id="btn-user-account" class="text-sm px-2 py-1 rounded hover:bg-gray-700">Account</button>
+    </div>
+    <nav class="flex flex-col space-y-3 flex-1">
+      <button id="btn-dashboard" class="px-3 py-2 bg-gray-700 hover:bg-gray-600 rounded">Dashboard</button>
+      <button id="btn-todos" class="px-3 py-2 bg-gray-800 hover:bg-gray-700 rounded">To-Do List</button>
+      <button id="btn-emails" class="px-3 py-2 bg-gray-800 hover:bg-gray-700 rounded">Emails</button>
+      <button id="btn-calendar" class="px-3 py-2 bg-gray-800 hover:bg-gray-700 rounded">Calendar</button>
+      <button id="btn-sync" class="px-3 py-2 bg-gray-800 hover:bg-gray-700 rounded">Sync Now</button>
+    </nav>
+    <button id="btn-logout" class="mt-auto px-3 py-2 bg-gray-800 hover:bg-gray-700 rounded">Logout</button>
+  </aside>
+
+  <!-- Main Content -->
+  <main class="flex-1 p-8">
+    <!-- Header -->
+    <div class="mb-8">
+      <h1 id="page-title" class="text-3xl font-bold text-gray-900 mb-6">Welcome To Sentinel</h1>
+      
+      <div class="relative mb-4">
+        <input
+          type="text"
+          placeholder="Ask me anything..."
+          class="w-full pl-12 pr-5 py-3 rounded-full border border-gray-200 bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+        />
+        <svg class="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+        </svg>
+      </div>
+      
+      <div class="flex items-center justify-between">
+        <button class="bg-blue-600 text-white rounded-full px-4 py-1 text-sm hover:bg-blue-700 transition-colors">
+          Chat History
+        </button>
+        
+        <div id="sync-message" class="text-sm text-gray-600 bg-gray-100 px-3 py-1 rounded-full hidden"></div>
+      </div>
+    </div>
+
+    <!-- Dashboard Content -->
+    <div id="dashboard-content" class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+      <!-- To-Do List Card -->
+      <div class="bg-white rounded-2xl shadow-sm border border-gray-200 p-6">
+        <h2 class="text-xl font-semibold text-gray-900 mb-4">To Do List</h2>
+        
+        <!-- Add new task -->
+        <form id="add-task-form" class="flex space-x-2 mb-6">
+          <input
+            id="new-task-input"
+            type="text"
+            placeholder="Add a new task..."
+            class="flex-1 px-3 py-2 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+          />
+          <button
+            type="submit"
+            class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors flex items-center space-x-1"
+          >
+            <span class="text-sm">Add</span>
+          </button>
+        </form>
+
+        <!-- Task list -->
+        <div id="task-list" class="space-y-1">
+          <!-- Tasks will be populated here -->
+        </div>
+      </div>
+      
+      <!-- Travel Card -->
+      <div class="bg-white rounded-2xl shadow-sm border border-gray-200 p-6">
+        <h2 class="text-xl font-semibold text-gray-900 mb-4">Upcoming Travel</h2>
+        
+        <div class="grid grid-cols-2 gap-4">
+          <div class="p-4 rounded-xl bg-gradient-to-br from-blue-400 to-blue-600 text-white min-h-[100px] flex flex-col justify-between">
+            <div>
+              <h3 class="font-semibold text-sm mb-1">Business Trip</h3>
+              <p class="text-xs opacity-90">New York</p>
+            </div>
+            <div class="text-right">
+              <div class="w-6 h-6 bg-white bg-opacity-30 rounded-full"></div>
+            </div>
+          </div>
+          <div class="p-4 rounded-xl bg-gradient-to-br from-purple-400 to-purple-600 text-white min-h-[100px] flex flex-col justify-between">
+            <div>
+              <h3 class="font-semibold text-sm mb-1">Conference</h3>
+              <p class="text-xs opacity-90">San Francisco</p>
+            </div>
+            <div class="text-right">
+              <div class="w-6 h-6 bg-white bg-opacity-30 rounded-full"></div>
+            </div>
+          </div>
+          <div class="p-4 rounded-xl bg-gradient-to-br from-green-400 to-green-600 text-white min-h-[100px] flex flex-col justify-between">
+            <div>
+              <h3 class="font-semibold text-sm mb-1">Vacation</h3>
+              <p class="text-xs opacity-90">Tokyo</p>
+            </div>
+            <div class="text-right">
+              <div class="w-6 h-6 bg-white bg-opacity-30 rounded-full"></div>
+            </div>
+          </div>
+          <div class="p-4 rounded-xl bg-gradient-to-br from-orange-400 to-orange-600 text-white min-h-[100px] flex flex-col justify-between">
+            <div>
+              <h3 class="font-semibold text-sm mb-1">Workshop</h3>
+              <p class="text-xs opacity-90">Berlin</p>
+            </div>
+            <div class="text-right">
+              <div class="w-6 h-6 bg-white bg-opacity-30 rounded-full"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- To-Do List Page Content (hidden by default) -->
+    <div id="todos-content" class="hidden max-w-4xl">
+      <div class="bg-white rounded-2xl shadow-sm border border-gray-200 p-6">
+        <h2 class="text-xl font-semibold text-gray-900 mb-4">To Do List</h2>
+        
+        <!-- Add new task -->
+        <form id="add-task-form-page" class="flex space-x-2 mb-6">
+          <input
+            id="new-task-input-page"
+            type="text"
+            placeholder="Add a new task..."
+            class="flex-1 px-3 py-2 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+          />
+          <button
+            type="submit"
+            class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors flex items-center space-x-1"
+          >
+            <span class="text-sm">Add</span>
+          </button>
+        </form>
+
+        <!-- Task list -->
+        <div id="task-list-page" class="space-y-1">
+          <!-- Tasks will be populated here -->
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <!-- Bottom Navigation -->
+  <nav class="fixed bottom-0 inset-x-0 bg-white border-t border-gray-200">
+    <div class="flex justify-around items-center py-2 max-w-full">
+      <button class="flex flex-col items-center space-y-1 py-2 px-3 text-gray-600 hover:text-gray-900 transition-colors min-w-0">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"></path>
+        </svg>
+        <span class="text-xs text-center leading-tight">Logout</span>
+      </button>
+      <button class="flex flex-col items-center space-y-1 py-2 px-3 text-gray-600 hover:text-gray-900 transition-colors min-w-0">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"></path>
+        </svg>
+        <span class="text-xs text-center leading-tight">Connections</span>
+      </button>
+      <button class="flex flex-col items-center space-y-1 py-2 px-3 text-gray-600 hover:text-gray-900 transition-colors min-w-0">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197m13.5-9a2.5 2.5 0 11-5 0 2.5 2.5 0 015 0z"></path>
+        </svg>
+        <span class="text-xs text-center leading-tight">Contacts</span>
+      </button>
+      <button class="flex flex-col items-center space-y-1 py-2 px-3 text-gray-600 hover:text-gray-900 transition-colors min-w-0">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"></path>
+        </svg>
+        <span class="text-xs text-center leading-tight">Chats</span>
+      </button>
+      <button class="flex flex-col items-center space-y-1 py-2 px-3 text-gray-600 hover:text-gray-900 transition-colors min-w-0">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-5 5v-5zM4 19h6v-2H4v2zM4 15h8v-2H4v2zM4 11h10V9H4v2z"></path>
+        </svg>
+        <span class="text-xs text-center leading-tight">Notifications</span>
+      </button>
+      <button class="flex flex-col items-center space-y-1 py-2 px-3 text-gray-600 hover:text-gray-900 transition-colors min-w-0">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+        </svg>
+        <span class="text-xs text-center leading-tight">Calendar</span>
+      </button>
+    </div>
+  </nav>
+
+  <!-- Emails Modal -->
+  <div id="email-modal" class="fixed inset-0 bg-gray-900 bg-opacity-75 hidden items-center justify-center z-50">
+    <div class="bg-white rounded-lg overflow-hidden w-11/12 max-w-4xl h-4/5 flex flex-col">
+      <div class="flex justify-between items-center bg-gray-100 px-4 py-3">
+        <h2 class="text-lg font-semibold">Inbox</h2>
+        <button id="close-email" class="text-gray-600 hover:text-gray-800 text-2xl leading-none">&times;</button>
+      </div>
+      <div class="overflow-auto flex-1">
+        <div id="email-list" class="divide-y divide-gray-100">
+          <!-- Emails will be populated here -->
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Calendar Modal -->
+  <div id="calendar-modal" class="fixed inset-0 bg-gray-900 bg-opacity-75 hidden items-center justify-center z-50">
+    <div class="bg-white rounded-lg overflow-hidden w-11/12 max-w-5xl h-[85vh] flex flex-col">
+      <div class="flex justify-between items-center bg-gray-100 px-4 py-3">
+        <div class="flex items-center gap-3">
+          <button id="cal-prev" class="px-3 py-1 text-sm bg-gray-200 hover:bg-gray-300 rounded">&larr;</button>
+          <h2 id="cal-month-label" class="text-lg font-semibold">Calendar</h2>
+          <button id="cal-next" class="px-3 py-1 text-sm bg-gray-200 hover:bg-gray-300 rounded">&rarr;</button>
+        </div>
+        <div class="flex items-center gap-2">
+          <button id="cal-today" class="px-3 py-1 text-sm bg-blue-600 text-white hover:bg-blue-700 rounded">Today</button>
+          <button id="cal-close" class="text-gray-600 hover:text-gray-800 text-2xl leading-none">&times;</button>
+        </div>
+      </div>
+      <div class="grid grid-cols-7 text-xs bg-gray-50 border-b border-gray-200">
+        <div class="px-3 py-2 font-medium text-gray-600">Sun</div>
+        <div class="px-3 py-2 font-medium text-gray-600">Mon</div>
+        <div class="px-3 py-2 font-medium text-gray-600">Tue</div>
+        <div class="px-3 py-2 font-medium text-gray-600">Wed</div>
+        <div class="px-3 py-2 font-medium text-gray-600">Thu</div>
+        <div class="px-3 py-2 font-medium text-gray-600">Fri</div>
+        <div class="px-3 py-2 font-medium text-gray-600">Sat</div>
+      </div>
+      <div id="cal-grid" class="grid grid-cols-7 gap-px bg-gray-200 flex-1 overflow-auto">
+        <!-- Calendar grid will be populated here -->
+      </div>
+      <div class="border-t border-gray-200 p-4 h-40 overflow-auto">
+        <h3 class="font-semibold mb-2 text-sm">Selected Day Events</h3>
+        <div id="cal-day-list" class="space-y-2">
+          <!-- Selected day events will be shown here -->
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // Data storage
+    let tasks = [
+      {
+        id: 'task-1',
+        title: 'Submit quarterly report',
+        status: 'open',
+        source: 'ui',
+        priorityScore: 85,
+        dueAt: new Date(Date.now() + 1 * 24 * 60 * 60 * 1000).toISOString(),
+        durationMin: 90,
+        notes: 'Final deadline for Q3 financial report'
+      },
+      {
+        id: 'task-2',
+        title: 'Flight check-in BA143 to Dubai',
+        status: 'open',
+        source: 'ui',
+        priorityScore: 95,
+        dueAt: new Date(Date.now() + 6 * 60 * 60 * 1000).toISOString(),
+        durationMin: 15,
+        notes: 'Online check-in opens 24h before departure'
+      },
+      {
+        id: 'task-3',
+        title: 'Team meeting preparation',
+        status: 'open',
+        source: 'ui',
+        priorityScore: 75,
+        dueAt: new Date(Date.now() + 2 * 60 * 60 * 1000).toISOString(),
+        durationMin: 45,
+        notes: 'Prepare slides and agenda for Monday meeting'
+      },
+      {
+        id: 'task-4',
+        title: 'Birthday party planning',
+        status: 'open',
+        source: 'ui',
+        priorityScore: 25,
+        dueAt: new Date(Date.now() + 5 * 24 * 60 * 60 * 1000).toISOString(),
+        durationMin: 120,
+        notes: 'Book venue and send invitations'
+      },
+      {
+        id: 'task-5',
+        title: 'Project proposal review',
+        status: 'done',
+        source: 'ui',
+        priorityScore: 60,
+        notes: 'Completed review of client proposal'
+      }
+    ];
+
+    let emails = [];
+    let suggestions = [];
+    let currentPage = 'dashboard';
+
+    // Fake API functions
+    const fakeApi = {
+      async fetchEmails() {
+        await new Promise(resolve => setTimeout(resolve, 800));
+        
+        const now = new Date();
+        return [
+          {
+            id: 'email-1',
+            subject: 'Your BA Flight BA143 – London→Dubai – 2 Sep 12:40',
+            body: 'Flight confirmation for BA143 departing London Heathrow (LHR) to Dubai (DXB) on September 2nd at 12:40. Please check in online 24 hours before departure.',
+            receivedAt: new Date(now.getTime() - 2 * 60 * 60 * 1000).toISOString(),
+            sender: 'British Airways <noreply@britishairways.com>',
+            recipient: 'you@example.com'
+          },
+          {
+            id: 'email-2',
+            subject: 'Project Kickoff – Tue 10:00',
+            body: 'Hi team, we have our project kickoff meeting scheduled for Tuesday at 10:00 AM. Please come prepared with your initial thoughts and questions.',
+            receivedAt: new Date(now.getTime() - 4 * 60 * 60 * 1000).toISOString(),
+            sender: 'Sarah Johnson <sarah@company.com>',
+            recipient: 'you@example.com'
+          },
+          {
+            id: 'email-3',
+            subject: 'Invoice due 31 Aug - Action Required',
+            body: 'Dear customer, your invoice #INV-2024-08-001 for $2,450 is due on August 31st. Please make payment by 5 PM to avoid late fees.',
+            receivedAt: new Date(now.getTime() - 6 * 60 * 60 * 1000).toISOString(),
+            sender: 'Billing <billing@service.com>',
+            recipient: 'you@example.com'
+          },
+          {
+            id: 'email-4',
+            subject: 'URGENT: Quarterly Review Deadline Tomorrow',
+            body: 'The quarterly review documents are due tomorrow by end of day. Please ensure all sections are completed and submitted through the company portal.',
+            receivedAt: new Date(now.getTime() - 1 * 60 * 60 * 1000).toISOString(),
+            sender: 'HR Department <hr@company.com>',
+            recipient: 'you@example.com'
+          }
+        ];
+      },
+
+      async syncEmailsToSuggestions(emails) {
+        await new Promise(resolve => setTimeout(resolve, 600));
+        
+        const suggestions = [];
+        const now = new Date();
+
+        emails.forEach(email => {
+          const subject = email.subject.toLowerCase();
+          
+          // Flight detection
+          if (subject.includes('flight') || subject.includes('ba')) {
+            const checkInTime = new Date(now);
+            checkInTime.setDate(now.getDate() + 1);
+            checkInTime.setHours(12, 0, 0, 0);
+            
+            suggestions.push({
+              id: `suggestion-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+              title: 'Check in for flight BA143',
+              notes: 'Online check-in opens 24 hours before departure',
+              dueAt: checkInTime.toISOString(),
+              durationMin: 15,
+              source: 'email',
+              linkedEmailId: email.id,
+              emailSubject: email.subject
+            });
+          }
+          
+          // Meeting detection
+          if (subject.includes('kickoff') || subject.includes('meeting')) {
+            const meetingDate = new Date(now);
+            meetingDate.setDate(now.getDate() + 2);
+            meetingDate.setHours(9, 0, 0, 0);
+            
+            suggestions.push({
+              id: `suggestion-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+              title: 'Prepare for Project Kickoff meeting',
+              notes: 'Review project scope and prepare questions',
+              dueAt: meetingDate.toISOString(),
+              durationMin: 30,
+              source: 'email',
+              linkedEmailId: email.id,
+              emailSubject: email.subject
+            });
+          }
+          
+          // Invoice detection
+          if (subject.includes('invoice') || subject.includes('due')) {
+            const billDate = new Date(now);
+            billDate.setMonth(7, 31); // August 31st
+            billDate.setHours(17, 0, 0, 0);
+            
+            suggestions.push({
+              id: `suggestion-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+              title: 'Pay invoice #INV-2024-08-001',
+              notes: 'Payment due by 5 PM to avoid late fees ($2,450)',
+              dueAt: billDate.toISOString(),
+              durationMin: 20,
+              source: 'email',
+              linkedEmailId: email.id,
+              emailSubject: email.subject
+            });
+          }
+        });
+
+        return suggestions;
+      }
+    };
+
+    // Utility functions
+    function formatDueTime(dueAt) {
+      const due = new Date(dueAt);
+      const now = new Date();
+      const diffHours = (due.getTime() - now.getTime()) / (1000 * 60 * 60);
+      
+      if (diffHours < 0) {
+        return 'Overdue';
+      } else if (diffHours < 24) {
+        return due.toLocaleTimeString('en-US', { 
+          hour: 'numeric', 
+          minute: '2-digit',
+          hour12: true 
+        });
+      } else {
+        return due.toLocaleDateString('en-US', { 
+          month: 'short', 
+          day: 'numeric',
+          hour: 'numeric',
+          minute: '2-digit',
+          hour12: true
+        });
+      }
+    }
+
+    function bucketSection(task, now) {
+      if (!task.dueAt) return 'Upcoming';
+      
+      const due = new Date(task.dueAt);
+      const diffDays = (due.getTime() - now.getTime()) / (1000 * 60 * 60 * 24);
+      
+      if (diffDays < 0) return 'Today';
+      else if (diffDays <= 1) return 'Today';
+      else if (diffDays <= 2) return 'Tomorrow';
+      else if (diffDays <= 7) return 'This Week';
+      else return 'Upcoming';
+    }
+
+    function groupTasksBySection(tasks) {
+      const now = new Date();
+      const sections = {
+        Today: [],
+        Tomorrow: [],
+        'This Week': [],
+        Upcoming: []
+      };
+      
+      tasks.forEach(task => {
+        const section = bucketSection(task, now);
+        sections[section].push(task);
+      });
+      
+      // Sort each section by priority score
+      Object.keys(sections).forEach(sectionKey => {
+        sections[sectionKey].sort((a, b) => b.priorityScore - a.priorityScore);
+      });
+      
+      return sections;
+    }
+
+    function groupSuggestionsBySection(suggestions) {
+      const now = new Date();
+      const sections = {
+        Today: [],
+        Tomorrow: [],
+        'This Week': [],
+        Upcoming: []
+      };
+      
+      suggestions.forEach(suggestion => {
+        const section = bucketSection(suggestion, now);
+        sections[section].push(suggestion);
+      });
+      
+      return sections;
+    }
+
+    function renderTasks(containerId) {
+      const container = document.getElementById(containerId);
+      const openTasks = tasks.filter(task => task.status === 'open');
+      const completedTasks = tasks.filter(task => task.status === 'done');
+      
+      const groupedTasks = groupTasksBySection(openTasks);
+      const groupedSuggestions = groupSuggestionsBySection(suggestions);
+      
+      let html = '';
+      
+      // Render sections
+      Object.entries(groupedTasks).forEach(([section, sectionTasks]) => {
+        if (sectionTasks.length === 0 && (groupedSuggestions[section] || []).length === 0) return;
+        
+        html += `<div class="mb-6">
+          <h4 class="text-sm font-semibold text-gray-500 mb-3">${section}</h4>
+          <div class="space-y-1">`;
+        
+        // Regular tasks
+        sectionTasks.forEach(task => {
+          html += `<div class="flex items-center space-x-3 py-2 border-b border-gray-100">
+            <button onclick="toggleTask('${task.id}')" class="w-5 h-5 rounded border-2 flex items-center justify-center transition-colors ${
+              task.status === 'done' 
+                ? 'bg-green-500 border-green-500 text-white' 
+                : 'border-gray-300 hover:border-gray-400'
+            }">
+              ${task.status === 'done' ? '✓' : ''}
+            </button>
+            
+            <div class="flex-1 min-w-0">
+              <div class="flex items-center space-x-2">
+                <span class="text-sm ${task.status === 'done' ? 'line-through text-gray-500' : 'text-gray-900'}">${task.title}</span>
+                
+                ${task.priorityScore > 70 ? '<span class="inline-block w-2 h-2 bg-red-500 rounded-full"></span>' : ''}
+                
+                ${task.dueAt ? `<span class="text-xs px-2 py-1 rounded-full ${
+                  new Date(task.dueAt) < new Date() 
+                    ? 'bg-red-100 text-red-700' 
+                    : 'bg-gray-100 text-gray-600'
+                }">${formatDueTime(task.dueAt)}</span>` : ''}
+              </div>
+            </div>
+            
+            <button onclick="deleteTask('${task.id}')" class="p-1 text-gray-400 hover:text-red-600 transition-colors">
+              <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
+              </svg>
+            </button>
+          </div>`;
+        });
+        
+        // Email suggestions for this section
+        const sectionSuggestions = groupedSuggestions[section] || [];
+        if (sectionSuggestions.length > 0) {
+          html += `<div class="ml-6 mt-3 space-y-2">
+            <div class="text-xs font-medium text-blue-600 mb-2 flex items-center space-x-1">
+              <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 4.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+              </svg>
+              <span>Suggestions from Email</span>
+            </div>
+            <div class="space-y-1">`;
+          
+          sectionSuggestions.forEach(suggestion => {
+            html += `<div class="flex items-center space-x-3 py-2 pl-4 border-l-2 border-blue-200 bg-blue-50 rounded-r-lg">
+              <div class="w-4 h-4 rounded border-2 border-blue-300 bg-white flex items-center justify-center">
+                <svg class="w-2 h-2 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
+                </svg>
+              </div>
+              
+              <div class="flex-1 min-w-0">
+                <div class="flex items-center space-x-2">
+                  <span class="text-sm text-blue-800 font-medium">${suggestion.title}</span>
+                  ${suggestion.dueAt ? `<span class="text-xs px-2 py-0.5 rounded-full bg-blue-100 text-blue-700">${formatDueTime(suggestion.dueAt)}</span>` : ''}
+                </div>
+                ${suggestion.notes ? `<p class="text-xs text-blue-700 mt-1 opacity-90">${suggestion.notes}</p>` : ''}
+                ${suggestion.emailSubject ? `<p class="text-xs text-blue-600 mt-1 opacity-70">From: ${suggestion.emailSubject}</p>` : ''}
+              </div>
+              
+              <div class="flex items-center space-x-1">
+                <button onclick="acceptSuggestion('${suggestion.id}')" class="p-1 bg-green-100 text-green-700 rounded hover:bg-green-200 transition-colors" title="Add to tasks">
+                  <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
+                  </svg>
+                </button>
+                <button onclick="dismissSuggestion('${suggestion.id}')" class="p-1 bg-gray-100 text-gray-600 rounded hover:bg-gray-200 transition-colors" title="Dismiss">
+                  <svg class="w-2 h-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
+                  </svg>
+                </button>
+              </div>
+            </div>`;
+          });
+          
+          html += `</div></div>`;
+        }
+        
+        html += `</div></div>`;
+      });
+      
+      // Completed tasks
+      if (completedTasks.length > 0) {
+        html += `<div class="mt-6 pt-4 border-t border-gray-200">
+          <h4 class="text-sm font-semibold text-gray-500 mb-3">Completed (${completedTasks.length})</h4>`;
+        
+        completedTasks.forEach(task => {
+          html += `<div class="flex items-center space-x-3 py-2 border-b border-gray-100 last:border-0">
+            <button onclick="toggleTask('${task.id}')" class="w-5 h-5 rounded border-2 bg-green-500 border-green-500 text-white flex items-center justify-center">
+              ✓
+            </button>
+            <span class="text-sm line-through text-gray-500 flex-1">${task.title}</span>
+            <button onclick="deleteTask('${task.id}')" class="p-1 text-gray-400 hover:text-red-600 transition-colors">
+              <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
+              </svg>
+            </button>
+          </div>`;
+        });
+        
+        html += `</div>`;
+      }
+      
+      container.innerHTML = html;
+    }
+
+    function renderEmails() {
+      const container = document.getElementById('email-list');
+      
+      if (emails.length === 0) {
+        container.innerHTML = `
+          <div class="p-8 text-center">
+            <svg class="mx-auto w-12 h-12 text-gray-300 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 4.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+            </svg>
+            <p class="text-gray-500 mb-4">No emails yet</p>
+            <button onclick="syncEmails()" class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors">
+              Sync Emails
+            </button>
+          </div>
+        `;
+        return;
+      }
+
+      const html = emails.map(email => {
+        const priority = email.subject.toLowerCase().includes('urgent') ? 'high' : 
+                        email.subject.toLowerCase().includes('flight') || email.subject.toLowerCase().includes('meeting') ? 'medium' : 'normal';
+        
+        return `
+          <div class="p-4 hover:bg-gray-50 transition-colors cursor-pointer">
+            <div class="flex items-start space-x-4">
+              <div class="flex-shrink-0 mt-1">
+                <div class="w-3 h-3 rounded-full ${
+                  priority === 'high' ? 'bg-red-500' :
+                  priority === 'medium' ? 'bg-yellow-500' :
+                  'bg-gray-300'
+                }"></div>
+              </div>
+              
+              <div class="flex-1 min-w-0">
+                <div class="flex items-center justify-between mb-1">
+                  <h3 class="text-sm font-semibold text-gray-900 truncate">${email.subject}</h3>
+                  <span class="text-xs text-gray-500 flex-shrink-0 ml-2">
+                    ${new Date(email.receivedAt).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true })}
+                  </span>
+                </div>
+                
+                <p class="text-sm text-gray-600 mb-2">
+                  ${email.body.length > 120 ? email.body.substring(0, 120) + '...' : email.body}
+                </p>
+                
+                <div class="flex items-center space-x-3">
+                  <button class="flex items-center space-x-1 text-xs text-gray-500 hover:text-gray-700 transition-colors">
+                    <span>Reply</span>
+                  </button>
+                  <button class="flex items-center space-x-1 text-xs text-gray-500 hover:text-gray-700 transition-colors">
+                    <span>Forward</span>
+                  </button>
+                  <button class="flex items-center space-x-1 text-xs text-gray-500 hover:text-gray-700 transition-colors">
+                    <span>Archive</span>
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        `;
+      }).join('');
+      
+      container.innerHTML = html;
+    }
+
+    // Task management functions
+    function addTask(title) {
+      const newTask = {
+        id: `task-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+        title,
+        status: 'open',
+        source: 'ui',
+        priorityScore: Math.floor(Math.random() * 50) + 25
+      };
+      
+      tasks.push(newTask);
+      renderTasks('task-list');
+      renderTasks('task-list-page');
+    }
+
+    function toggleTask(taskId) {
+      const task = tasks.find(t => t.id === taskId);
+      if (task) {
+        task.status = task.status === 'open' ? 'done' : 'open';
+        renderTasks('task-list');
+        renderTasks('task-list-page');
+      }
+    }
+
+    function deleteTask(taskId) {
+      tasks = tasks.filter(t => t.id !== taskId);
+      renderTasks('task-list');
+      renderTasks('task-list-page');
+    }
+
+    function acceptSuggestion(suggestionId) {
+      const suggestion = suggestions.find(s => s.id === suggestionId);
+      if (!suggestion) return;
+
+      const newTask = {
+        id: `task-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+        title: suggestion.title,
+        notes: suggestion.notes,
+        dueAt: suggestion.dueAt,
+        durationMin: suggestion.durationMin,
+        status: 'open',
+        source: suggestion.source,
+        linkedEmailId: suggestion.linkedEmailId,
+        priorityScore: Math.floor(Math.random() * 30) + 60
+      };
+      
+      tasks.push(newTask);
+      suggestions = suggestions.filter(s => s.id !== suggestionId);
+      renderTasks('task-list');
+      renderTasks('task-list-page');
+    }
+
+    function dismissSuggestion(suggestionId) {
+      suggestions = suggestions.filter(s => s.id !== suggestionId);
+      renderTasks('task-list');
+      renderTasks('task-list-page');
+    }
+
+    async function syncEmails() {
+      const syncMessage = document.getElementById('sync-message');
+      syncMessage.textContent = 'Syncing emails...';
+      syncMessage.classList.remove('hidden');
+      
+      try {
+        emails = await fakeApi.fetchEmails();
+        const newSuggestions = await fakeApi.syncEmailsToSuggestions(emails);
+        suggestions = [...suggestions, ...newSuggestions];
+        
+        syncMessage.textContent = `Synced ${emails.length} emails, found ${newSuggestions.length} suggestions`;
+        renderTasks('task-list');
+        renderTasks('task-list-page');
+        renderEmails();
+        
+        setTimeout(() => {
+          syncMessage.classList.add('hidden');
+        }, 3000);
+        
+      } catch (error) {
+        syncMessage.textContent = 'Error syncing emails';
+        setTimeout(() => {
+          syncMessage.classList.add('hidden');
+        }, 3000);
+      }
+    }
+
+    // Navigation functions
+    function showPage(page) {
+      currentPage = page;
+      
+      // Update page title
+      const pageTitle = document.getElementById('page-title');
+      const titles = {
+        dashboard: 'Welcome To Sentinel',
+        todos: 'To-Do List',
+        emails: 'Inbox',
+        calendar: 'Calendar'
+      };
+      pageTitle.textContent = titles[page] || 'Welcome To Sentinel';
+      
+      // Update sidebar active states
+      document.querySelectorAll('aside nav button').forEach(btn => {
+        btn.classList.remove('bg-gray-700');
+        btn.classList.add('bg-gray-800');
+      });
+      
+      const activeBtn = document.getElementById(`btn-${page}`);
+      if (activeBtn) {
+        activeBtn.classList.remove('bg-gray-800');
+        activeBtn.classList.add('bg-gray-700');
+      }
+      
+      // Show/hide content
+      document.getElementById('dashboard-content').classList.toggle('hidden', page !== 'dashboard');
+      document.getElementById('todos-content').classList.toggle('hidden', page !== 'todos');
+      
+      // Handle modals
+      if (page === 'emails') {
+        document.getElementById('email-modal').classList.replace('hidden', 'flex');
+        renderEmails();
+      } else if (page === 'calendar') {
+        document.getElementById('calendar-modal').classList.replace('hidden', 'flex');
+        renderCalendar();
+      }
+    }
+
+    function renderCalendar() {
+      const now = new Date();
+      const monthLabel = document.getElementById('cal-month-label');
+      monthLabel.textContent = now.toLocaleString('en-US', { month: 'long', year: 'numeric' });
+      
+      const grid = document.getElementById('cal-grid');
+      const daysInMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0).getDate();
+      const firstDay = new Date(now.getFullYear(), now.getMonth(), 1).getDay();
+      
+      let html = '';
+      
+      // Empty cells for days before month starts
+      for (let i = 0; i < firstDay; i++) {
+        html += '<div class="bg-gray-50 p-2 h-32"></div>';
+      }
+      
+      // Days of the month
+      for (let day = 1; day <= daysInMonth; day++) {
+        const isToday = day === now.getDate();
+        const dayTasks = tasks.filter(task => {
+          if (!task.dueAt) return false;
+          const taskDate = new Date(task.dueAt);
+          return taskDate.getDate() === day && taskDate.getMonth() === now.getMonth();
+        });
+        
+        html += `
+          <div class="bg-white p-2 h-32 flex flex-col border border-gray-200 ${isToday ? 'ring-2 ring-blue-500' : ''}">
+            <div class="flex items-center justify-between mb-1">
+              <span class="text-xs font-medium ${isToday ? 'text-blue-600' : 'text-gray-900'}">${day}</span>
+              ${dayTasks.length ? `<span class="text-xs bg-gray-100 rounded px-1">${dayTasks.length}</span>` : ''}
+            </div>
+            <div class="space-y-1 overflow-auto text-xs">
+              ${dayTasks.slice(0, 3).map(task => `
+                <div class="p-1 bg-orange-100 text-orange-800 rounded truncate" title="${task.title}">
+                  ${task.title}
+                </div>
+              `).join('')}
+              ${dayTasks.length > 3 ? `<div class="text-xs text-gray-500">+${dayTasks.length - 3} more</div>` : ''}
+            </div>
+          </div>
+        `;
+      }
+      
+      grid.innerHTML = html;
+    }
+
+    // Event listeners
+    document.addEventListener('DOMContentLoaded', () => {
+      // Navigation
+      document.getElementById('btn-dashboard').addEventListener('click', () => showPage('dashboard'));
+      document.getElementById('btn-todos').addEventListener('click', () => showPage('todos'));
+      document.getElementById('btn-emails').addEventListener('click', () => showPage('emails'));
+      document.getElementById('btn-calendar').addEventListener('click', () => showPage('calendar'));
+      document.getElementById('btn-sync').addEventListener('click', syncEmails);
+      
+      // Modal close buttons
+      document.getElementById('close-email').addEventListener('click', () => {
+        document.getElementById('email-modal').classList.replace('flex', 'hidden');
+        showPage('dashboard');
+      });
+      
+      document.getElementById('cal-close').addEventListener('click', () => {
+        document.getElementById('calendar-modal').classList.replace('flex', 'hidden');
+        showPage('dashboard');
+      });
+      
+      // Add task forms
+      document.getElementById('add-task-form').addEventListener('submit', (e) => {
+        e.preventDefault();
+        const input = document.getElementById('new-task-input');
+        if (input.value.trim()) {
+          addTask(input.value.trim());
+          input.value = '';
+        }
+      });
+      
+      document.getElementById('add-task-form-page').addEventListener('submit', (e) => {
+        e.preventDefault();
+        const input = document.getElementById('new-task-input-page');
+        if (input.value.trim()) {
+          addTask(input.value.trim());
+          input.value = '';
+        }
+      });
+      
+      // Initial render
+      showPage('dashboard');
+      renderTasks('task-list');
+      renderTasks('task-list-page');
+    });
+  </script>
+</body>
+</html>
