@@ -32,50 +32,52 @@ DEBUG=False
 
 The `runtime.txt` file has been created to specify Python 3.11.0. Render should automatically detect this.
 
-### 4. Commit and Push Changes
-
-```bash
-git add .
-git commit -m "Fix Render deployment configuration"
-git push origin main
-```
-
-### 5. Redeploy
-
-After pushing the changes, Render should automatically redeploy. If not, manually trigger a redeploy from the Render dashboard.
-
-## Alternative: Use Railway Instead
+### 4. Alternative: Use Railway Instead
 
 If Render continues to have issues, consider using Railway:
 
-1. Go to [railway.app](https://railway.app)
+1. Go to [Railway.app](https://railway.app)
 2. Connect your GitHub repository
-3. Create a new project
-4. Add a service and select your repository
-5. Railway will automatically detect the Python backend
-6. Add the same environment variables
-7. Deploy
+3. Deploy the backend using the `backend/railway.toml` configuration
+4. Add the same environment variables
 
-## Testing
+### 5. Test the Deployment
 
-Once deployed, test your backend:
-- Health check: `https://your-backend-url.onrender.com/api/health`
-- Root endpoint: `https://your-backend-url.onrender.com/`
+After making these changes:
 
-## Update Vercel Environment Variables
+1. **Redeploy** your Render service
+2. Wait for the deployment to complete
+3. Test the health endpoint: `https://todolistprototype.onrender.com/api/health`
+4. Update your Vercel environment variables with the new backend URL
 
-After your backend is working, update your Vercel environment variables:
-- `VITE_API_BASE_URL`: `https://your-backend-url.onrender.com/api`
+### 6. Update Vercel Environment Variables
 
-## Common Issues
+In your Vercel dashboard, add/update:
 
-1. **Port binding**: Make sure to use `$PORT` environment variable
-2. **CORS**: The backend now allows your Vercel domain
-3. **Dependencies**: All required packages should be in `requirements.txt`
-4. **Python version**: Specified in `runtime.txt`
+```
+VITE_API_BASE_URL=https://todolistprototype.onrender.com/api
+```
 
-## Files Modified
+## Common Issues and Solutions
 
-- `Procfile`: Updated start command
-- `runtime.txt`: Added Python version specification
-- `backend/main.py`: Added Vercel domain to CORS origins
+### Issue: "Module not found" errors
+**Solution**: Ensure all dependencies are in `requirements.txt` and the build command runs successfully.
+
+### Issue: "Port binding" errors
+**Solution**: Make sure the start command uses `$PORT` environment variable and `--host 0.0.0.0`.
+
+### Issue: "Database connection" errors
+**Solution**: Verify your Supabase environment variables are correct and the database is accessible.
+
+### Issue: "CORS" errors
+**Solution**: The CORS middleware has been updated to allow your Vercel domain.
+
+## Next Steps
+
+1. Update your Render service configuration
+2. Redeploy the service
+3. Test the health endpoint
+4. Update Vercel environment variables
+5. Test the full application
+
+If you continue to have issues, consider using Railway as an alternative deployment platform.
