@@ -107,7 +107,11 @@ async def sign_up(request: Request, signup_request: SignUpRequest):
             
             # Create new user
             password_hash = hash_password(signup_request.password)
-            user = fallback_db.create_user(signup_request.email, password_hash)
+            user_data = {
+                'email': signup_request.email,
+                'password_hash': password_hash
+            }
+            user = fallback_db.create_user(user_data)
             
             access_token = create_access_token(data={"sub": user['id'], "email": user['email']})
             return AuthResponse(

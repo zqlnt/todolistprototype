@@ -1,234 +1,144 @@
-from fastapi import APIRouter, HTTPException, Depends, status
-from typing import List, Optional
-from database import supabase_client, fallback_db, is_using_fallback
-from models import Task, TaskCreate, TaskUpdate, TaskResponse, TaskListResponse, User
-from main import get_current_user
+"""
+Database configuration and utilities for Sentinel FastAPI backend
+"""
+import os
+from supabase import create_client, Client
+from typing import Dict, List, Any, Optional
+import json
+from datetime import datetime
 
-router = APIRouter()
+# Supabase configuration
+SUPABASE_URL = os.getenv("SUPABASE_URL", "")
+SUPABASE_KEY = os.getenv("SUPABASE_ANON_KEY", "")
 
-@router.get("/", response_model=TaskListResponse)
-async def list_tasks(current_user: User = Depends(get_current_user)):
-    """Get all tasks for the current user"""
+# Initialize Supabase client
+supabase_client: Optional[Client] = None
+if SUPABASE_URL and SUPABASE_KEY:
     try:
-        if is_using_fallback():
-            # Use fallback database
-            task_data_list = fallback_db.get_tasks_by_user(current_user.id)
-            tasks = []
-            for task_data in task_data_list:
-                task = Task(
-                    id=task_data['id'],
-                    user_id=task_data['user_id'],
-                    title=task_data['title'],
-                    status=task_data['status'],
-                    dueAt=task_data.get('dueAt'),
-                    isStarred=bool(task_data['isStarred']),
-                    category=task_data.get('category'),
-                    parentId=task_data.get('parent_id'),
-                    inserted_at=task_data['inserted_at'],
-                    updated_at=task_data['updated_at']
-                )
-                tasks.append(task)
-        else:
-            # Use Supabase
-            response = supabase_client.table('tasks').select('*').eq('user_id', current_user.id).order('isStarred', desc=True).order('dueAt', desc=False).execute()
-            
-            tasks = []
-            for task_data in response.data:
-                # Convert snake_case to camelCase for frontend compatibility
-                task = Task(
-                    id=task_data['id'],
-                    user_id=task_data['user_id'],
-                    title=task_data['title'],
-                    status=task_data['status'],
-                    dueAt=task_data.get('dueAt'),
-                    isStarred=task_data['isStarred'],
-                    category=task_data.get('category'),
-                    parentId=task_data.get('parent_id'),
-                    inserted_at=task_data['inserted_at'],
-                    updated_at=task_data['updated_at']
-                )
-                tasks.append(task)
-        
-        return TaskListResponse(success=True, data=tasks)
+        supabase_client = create_client(SUPABASE_URL, SUPABASE_KEY)
     except Exception as e:
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Failed to fetch tasks: {str(e)}"
-        )
+        print(f"Failed to initialize Supabase client: {e}")
+        supabase_client = None
 
-@router.post("/", response_model=TaskResponse)
-async def create_task(task: TaskCreate, current_user: User = Depends(get_current_user)):
-    """Create a new task"""
-    try:
-        task_data = {
-            'user_id': current_user.id,
-            'title': task.title,
-            'status': 'pending',
-            'dueAt': task.due_at.isoformat() if task.due_at else None,
-            'isStarred': task.is_starred,
-            'category': task.category,
-            'parent_id': task.parent_id
+# Fallback in-memory database for development/testing
+class FallbackDatabase:
+    def __init__(self):
+        self.tasks: Dict[str, Dict[str, Any]] = {}
+        self.users: Dict[str, Dict[str, Any]] = {}
+        self._next_task_id = 1
+        self._next_user_id = 1
+    
+    def create_user(self, user_data: Dict[str, Any]) -> Dict[str, Any]:
+        """Create a new user in fallback database"""
+        user_id = str(self._next_user_id)
+        self._next_user_id += 1
+        
+        user = {
+            'id': user_id,
+            'email': user_data['email'],
+            'name': user_data.get('name', ''),
+            'password_hash': user_data.get('password_hash', ''),
+            'created_at': datetime.now().isoformat(),
+            'updated_at': datetime.now().isoformat()
         }
+        self.users[user_id] = user
+        return user
+    
+    def get_user_by_email(self, email: str) -> Optional[Dict[str, Any]]:
+        """Get user by email"""
+        for user in self.users.values():
+            if user['email'] == email:
+                return user
+        return None
+    
+    def get_user_by_id(self, user_id: str) -> Optional[Dict[str, Any]]:
+        """Get user by ID"""
+        return self.users.get(user_id)
+    
+    def create_task(self, task_data: Dict[str, Any]) -> Dict[str, Any]:
+        """Create a new task"""
+        task_id = str(self._next_task_id)
+        self._next_task_id += 1
         
-        if is_using_fallback():
-            # Use fallback database
-            created_task_data = fallback_db.create_task(task_data)
-        else:
-            # Use Supabase
-            response = supabase_client.table('tasks').insert(task_data).execute()
-            
-            if not response.data:
-                raise HTTPException(
-                    status_code=status.HTTP_400_BAD_REQUEST,
-                    detail="Failed to create task"
-                )
-            
-            created_task_data = response.data[0]
+        task = {
+            'id': task_id,
+            'user_id': task_data['user_id'],
+            'title': task_data['title'],
+            'status': task_data.get('status', 'pending'),
+            'dueAt': task_data.get('dueAt'),
+            'isStarred': task_data.get('isStarred', False),
+            'category': task_data.get('category'),
+            'parent_id': task_data.get('parent_id'),
+            'inserted_at': datetime.now().isoformat(),
+            'updated_at': datetime.now().isoformat()
+        }
+        self.tasks[task_id] = task
+        return task
+    
+    def get_tasks_by_user(self, user_id: str) -> List[Dict[str, Any]]:
+        """Get all tasks for a user"""
+        user_tasks = [task for task in self.tasks.values() if task['user_id'] == user_id]
+        # Sort by starred first, then by due date
+        user_tasks.sort(key=lambda x: (not x['isStarred'], x.get('dueAt', '')))
+        return user_tasks
+    
+    def update_task(self, task_id: str, user_id: str, update_data: Dict[str, Any]) -> Optional[Dict[str, Any]]:
+        """Update a task"""
+        if task_id not in self.tasks:
+            return None
         
-        created_task = Task(
-            id=created_task_data['id'],
-            user_id=created_task_data['user_id'],
-            title=created_task_data['title'],
-            status=created_task_data['status'],
-            dueAt=created_task_data.get('dueAt'),
-            isStarred=bool(created_task_data['isStarred']),
-            category=created_task_data.get('category'),
-            parentId=created_task_data.get('parent_id'),
-            inserted_at=created_task_data['inserted_at'],
-            updated_at=created_task_data['updated_at']
-        )
+        task = self.tasks[task_id]
+        if task['user_id'] != user_id:
+            return None
         
-        return TaskResponse(success=True, data=created_task, message="Task created successfully")
-    except Exception as e:
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Failed to create task: {str(e)}"
-        )
+        # Update fields
+        for key, value in update_data.items():
+            if key in task:
+                task[key] = value
+        
+        task['updated_at'] = datetime.now().isoformat()
+        return task
+    
+    def delete_task(self, task_id: str, user_id: str) -> bool:
+        """Delete a task"""
+        if task_id not in self.tasks:
+            return False
+        
+        task = self.tasks[task_id]
+        if task['user_id'] != user_id:
+            return False
+        
+        del self.tasks[task_id]
+        return True
 
-@router.put("/{task_id}", response_model=TaskResponse)
-async def update_task(task_id: str, task_update: TaskUpdate, current_user: User = Depends(get_current_user)):
-    """Update an existing task"""
-    try:
-        # Build update data
-        update_data = {}
-        if task_update.title is not None:
-            update_data['title'] = task_update.title
-        if task_update.status is not None:
-            update_data['status'] = task_update.status
-        if task_update.due_at is not None:
-            update_data['dueAt'] = task_update.due_at.isoformat()
-        if task_update.is_starred is not None:
-            update_data['isStarred'] = task_update.is_starred
-        if task_update.category is not None:
-            update_data['category'] = task_update.category
-        
-        if is_using_fallback():
-            # Use fallback database
-            updated_task_data = fallback_db.update_task(task_id, current_user.id, update_data)
-            if not updated_task_data:
-                raise HTTPException(
-                    status_code=status.HTTP_404_NOT_FOUND,
-                    detail="Task not found"
-                )
-        else:
-            # Use Supabase
-            response = supabase_client.table('tasks').update(update_data).eq('id', task_id).eq('user_id', current_user.id).execute()
-            
-            if not response.data:
-                raise HTTPException(
-                    status_code=status.HTTP_404_NOT_FOUND,
-                    detail="Task not found"
-                )
-            
-            updated_task_data = response.data[0]
-        
-        updated_task = Task(
-            id=updated_task_data['id'],
-            user_id=updated_task_data['user_id'],
-            title=updated_task_data['title'],
-            status=updated_task_data['status'],
-            dueAt=updated_task_data.get('dueAt'),
-            isStarred=bool(updated_task_data['isStarred']),
-            category=updated_task_data.get('category'),
-            parentId=updated_task_data.get('parent_id'),
-            inserted_at=updated_task_data['inserted_at'],
-            updated_at=updated_task_data['updated_at']
-        )
-        
-        return TaskResponse(success=True, data=updated_task, message="Task updated successfully")
-    except Exception as e:
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Failed to update task: {str(e)}"
-        )
+# Initialize fallback database
+fallback_db = FallbackDatabase()
 
-@router.delete("/{task_id}")
-async def delete_task(task_id: str, current_user: User = Depends(get_current_user)):
-    """Delete a task"""
-    try:
-        if is_using_fallback():
-            # Use fallback database
-            success = fallback_db.delete_task(task_id, current_user.id)
-            if not success:
-                raise HTTPException(
-                    status_code=status.HTTP_404_NOT_FOUND,
-                    detail="Task not found"
-                )
-        else:
-            # Use Supabase
-            response = supabase_client.table('tasks').delete().eq('id', task_id).eq('user_id', current_user.id).execute()
-            
-            if not response.data:
-                raise HTTPException(
-                    status_code=status.HTTP_404_NOT_FOUND,
-                    detail="Task not found"
-                )
-        
-        return {"success": True, "message": "Task deleted successfully"}
-    except Exception as e:
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Failed to delete task: {str(e)}"
-        )
+def is_using_fallback() -> bool:
+    """Check if we should use the fallback database instead of Supabase"""
+    return supabase_client is None or not SUPABASE_URL or not SUPABASE_KEY
 
-@router.put("/{task_id}/status")
-async def toggle_task_status(task_id: str, current_user: User = Depends(get_current_user)):
-    """Toggle task status between pending and done"""
-    try:
-        new_status = 'done' if current_status == 'pending' else 'pending'
-        
-        # Update the status
-        update_response = supabase_client.table('tasks').update({'status': new_status}).eq('id', task_id).eq('user_id', current_user.id).execute()
-        
-        return {"success": True, "message": f"Task status updated to {new_status}"}
-    except Exception as e:
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Failed to toggle task status: {str(e)}"
-        )
-
-@router.put("/{task_id}/star")
-async def toggle_task_star(task_id: str, current_user: User = Depends(get_current_user)):
-    """Toggle task star status"""
-    try:
-        # First get the current task
-        response = supabase_client.table('tasks').select('isStarred').eq('id', task_id).eq('user_id', current_user.id).execute()
-        
-        if not response.data:
-            raise HTTPException(
-                status_code=status.HTTP_404_NOT_FOUND,
-                detail="Task not found"
-            )
-        
-        current_starred = response.data[0]['isStarred']
-        new_starred = not current_starred
-        
-        # Update the star status
-        update_response = supabase_client.table('tasks').update({'isStarred': new_starred}).eq('id', task_id).eq('user_id', current_user.id).execute()
-        
-        return {"success": True, "message": f"Task {'starred' if new_starred else 'unstarred'}"}
-    except Exception as e:
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Failed to toggle task star: {str(e)}"
-        )
+# Test database connection
+def test_database_connection() -> Dict[str, Any]:
+    """Test database connection and return status"""
+    if is_using_fallback():
+        return {
+            "status": "fallback",
+            "message": "Using fallback in-memory database",
+            "supabase_configured": bool(SUPABASE_URL and SUPABASE_KEY)
+        }
+    else:
+        try:
+            # Try a simple query to test connection
+            response = supabase_client.table('tasks').select('id').limit(1).execute()
+            return {
+                "status": "connected",
+                "message": "Successfully connected to Supabase",
+                "supabase_configured": True
+            }
+        except Exception as e:
+            return {
+                "status": "error",
+                "message": f"Supabase connection failed: {str(e)}",
+                "supabase_configured": True
+            }

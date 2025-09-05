@@ -7,6 +7,7 @@ from dotenv import load_dotenv
 
 from routers import tasks, auth, emails
 from auth_utils import get_current_user_flexible
+from database import is_using_fallback
 
 load_dotenv()
 

@@ -1,0 +1,16 @@
+# Railway deployment configuration
+# Add this to your backend folder
+
+[build]
+builder = "nixpacks"
+
+[deploy]
+startCommand = "python run.py"
+healthcheckPath = "/"
+healthcheckTimeout = 300
+restartPolicyType = "on_failure"
+
+[env]
+API_HOST = "0.0.0.0"
+API_PORT = "8000"
+DEBUG = "False"

@@ -1,3 +1,6 @@
+# Root requirements.txt for deployment platforms
+# This includes all backend dependencies
+
 fastapi==0.104.1
 uvicorn[standard]==0.24.0
 python-dotenv==1.0.0
@@ -9,3 +12,4 @@ passlib[bcrypt]==1.7.4
 PyJWT==2.8.0
 starlette>=0.27.0
 python-multipart>=0.0.6
+itsdangerous>=2.0.0
