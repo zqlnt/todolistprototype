@@ -57,7 +57,7 @@ class ApiService {
       access_token: string;
       token_type: string;
       user: any;
-    }>('/auth/signin', {
+    }>('/api/auth/signin', {
       method: 'POST',
       body: JSON.stringify({ email, password }),
     });
@@ -68,20 +68,20 @@ class ApiService {
       access_token: string;
       token_type: string;
       user: any;
-    }>('/auth/signup', {
+    }>('/api/auth/signup', {
       method: 'POST',
       body: JSON.stringify({ email, password }),
     });
   }
 
   async signOut() {
-    return this.request('/auth/signout', {
+    return this.request('/api/auth/signout', {
       method: 'POST',
     });
   }
 
   async getUser(token: string) {
-    return this.request(`/auth/user?token=${token}`);
+    return this.request(`/api/auth/user?token=${token}`);
   }
 
   // Task endpoints
@@ -90,7 +90,7 @@ class ApiService {
       success: boolean;
       data: any[];
       message?: string;
-    }>('/tasks/');
+    }>('/api/tasks/');
   }
 
   async createTask(task: {
@@ -104,7 +104,7 @@ class ApiService {
       success: boolean;
       data: any;
       message?: string;
-    }>('/tasks/', {
+    }>('/api/tasks/', {
       method: 'POST',
       body: JSON.stringify(task),
     });
@@ -121,33 +121,33 @@ class ApiService {
       success: boolean;
       data: any;
       message?: string;
-    }>(`/tasks/${taskId}`, {
+    }>(`/api/tasks/${taskId}`, {
       method: 'PUT',
       body: JSON.stringify(updates),
     });
   }
 
   async deleteTask(taskId: string) {
-    return this.request(`/tasks/${taskId}`, {
+    return this.request(`/api/tasks/${taskId}`, {
       method: 'DELETE',
     });
   }
 
   async toggleTaskStatus(taskId: string) {
-    return this.request(`/tasks/${taskId}/status`, {
+    return this.request(`/api/tasks/${taskId}/status`, {
       method: 'PUT',
     });
   }
 
   async toggleTaskStar(taskId: string) {
-    return this.request(`/tasks/${taskId}/star`, {
+    return this.request(`/api/tasks/${taskId}/star`, {
       method: 'PUT',
     });
   }
 
   // Email endpoints
   async getEmails() {
-    return this.request<any[]>('/emails/');
+    return this.request<any[]>('/api/emails/');
   }
 
   async syncEmails() {
@@ -156,13 +156,13 @@ class ApiService {
       emails: any[];
       suggestions: any[];
       message?: string;
-    }>('/emails/sync', {
+    }>('/api/emails/sync', {
       method: 'POST',
     });
   }
 
   async getEmailSuggestions() {
-    return this.request<any[]>('/emails/suggestions');
+    return this.request<any[]>('/api/emails/suggestions');
   }
 }
 
