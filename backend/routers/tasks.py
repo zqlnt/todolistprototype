@@ -75,7 +75,7 @@ async def list_tasks_no_auth():
             )
             tasks.append(task)
         # Sort: starred first then due date ascending
-        tasks.sort(key=lambda t: (not t.isStarred, t.dueAt or ""))
+        tasks.sort(key=lambda t: (not t.is_starred, t.due_at or ""))
         return TaskListResponse(success=True, data=tasks)
     except Exception as e:
         raise HTTPException(
