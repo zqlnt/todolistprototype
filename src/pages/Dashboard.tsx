@@ -637,41 +637,43 @@ const Dashboard: React.FC = () => {
 
           {/* Add new task */}
           <div className="mb-4 pb-3 border-b border-neutral-200 space-y-2">
-            <form onSubmit={handleAddTask} className="flex space-x-1">
-              <input
-                type="text"
-                value={newTaskTitle}
-                onChange={(e) => setNewTaskTitle(e.target.value)}
-                placeholder="Add a new task..."
-                className="flex-1 px-3 py-2 text-xs border border-neutral-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
-              />
-              <button
-                type="submit"
-                className="px-3 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors flex items-center space-x-1 flex-shrink-0"
-              >
-                <Plus size={14} />
-                <span className="text-xs">Add</span>
-              </button>
+            <form onSubmit={handleAddTask} className="space-y-2">
+              <div className="flex space-x-1">
+                <input
+                  type="text"
+                  value={newTaskTitle}
+                  onChange={(e) => setNewTaskTitle(e.target.value)}
+                  placeholder="Add a new task..."
+                  className="flex-1 px-3 py-2 text-xs border border-neutral-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                />
+                <button
+                  type="submit"
+                  className="px-3 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors flex items-center space-x-1 flex-shrink-0"
+                >
+                  <Plus size={14} />
+                  <span className="text-xs">Add</span>
+                </button>
+              </div>
+              
+              <div className="flex space-x-1">
+                <input
+                  type="datetime-local"
+                  value={newTaskDueAt}
+                  onChange={(e) => setNewTaskDueAt(e.target.value)}
+                  className="flex-1 px-3 py-2 text-xs border border-neutral-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                />
+                <select
+                  value={newTaskCategory}
+                  onChange={(e) => setNewTaskCategory(e.target.value)}
+                  className="flex-1 px-3 py-2 text-xs border border-neutral-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                >
+                  <option value="">No category</option>
+                  {categories.map(category => (
+                    <option key={category} value={category}>{category}</option>
+                  ))}
+                </select>
+              </div>
             </form>
-            
-            <div className="flex space-x-1">
-              <input
-                type="datetime-local"
-                value={newTaskDueAt}
-                onChange={(e) => setNewTaskDueAt(e.target.value)}
-                className="flex-1 px-3 py-2 text-xs border border-neutral-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
-              />
-              <select
-                value={newTaskCategory}
-                onChange={(e) => setNewTaskCategory(e.target.value)}
-                className="flex-1 px-3 py-2 text-xs border border-neutral-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
-              >
-                <option value="">No category</option>
-                {categories.map(category => (
-                  <option key={category} value={category}>{category}</option>
-                ))}
-              </select>
-            </div>
           </div>
           
           {/* Task sections */}
