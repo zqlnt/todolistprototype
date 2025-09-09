@@ -1,6 +1,7 @@
 from fastapi import APIRouter, HTTPException, Depends, status
 from fastapi import Request
 from typing import List, Optional
+from datetime import datetime
 from database import supabase_client, fallback_db, is_using_fallback
 from models import Task, TaskCreate, TaskUpdate, TaskResponse, TaskListResponse, User
 from auth_utils import get_current_user_flexible
@@ -81,6 +82,80 @@ async def list_tasks_no_auth():
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"Failed to fetch tasks (no-auth): {str(e)}"
+        )
+
+# TEMPORARY: Update task without authentication
+@router.put("/update-no-auth/{task_id}", response_model=TaskResponse)
+async def update_task_no_auth(task_id: str, task_update: TaskUpdate):
+    """TEMPORARY: Update task without authentication"""
+    try:
+        # Find the task in fallback database
+        if task_id not in fallback_db.tasks:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="Task not found"
+            )
+        
+        task = fallback_db.tasks[task_id]
+        
+        # Build update data
+        update_data = {}
+        if task_update.title is not None:
+            update_data['title'] = task_update.title
+        if task_update.status is not None:
+            update_data['status'] = task_update.status
+        if task_update.due_at is not None:
+            update_data['dueAt'] = task_update.due_at.isoformat()
+        if task_update.is_starred is not None:
+            update_data['isStarred'] = task_update.is_starred
+        if task_update.category is not None:
+            update_data['category'] = task_update.category
+        
+        # Update the task
+        for key, value in update_data.items():
+            if key in task:
+                task[key] = value
+        
+        task['updated_at'] = datetime.now().isoformat()
+        
+        # Convert to Task model
+        updated_task = Task(
+            id=task['id'],
+            user_id=task['user_id'],
+            title=task['title'],
+            status=task['status'],
+            dueAt=task.get('dueAt'),
+            isStarred=bool(task.get('isStarred', False)),
+            category=task.get('category'),
+            parentId=task.get('parent_id'),
+            inserted_at=task['inserted_at'],
+            updated_at=task['updated_at']
+        )
+        
+        return TaskResponse(success=True, data=updated_task, message="Task updated successfully")
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Failed to update task: {str(e)}"
+        )
+
+# TEMPORARY: Delete task without authentication
+@router.delete("/delete-no-auth/{task_id}")
+async def delete_task_no_auth(task_id: str):
+    """TEMPORARY: Delete task without authentication"""
+    try:
+        if task_id not in fallback_db.tasks:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="Task not found"
+            )
+        
+        del fallback_db.tasks[task_id]
+        return {"success": True, "message": "Task deleted successfully"}
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Failed to delete task: {str(e)}"
         )
 
 @router.get("/", response_model=TaskListResponse)
