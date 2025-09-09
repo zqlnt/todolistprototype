@@ -120,3 +120,92 @@ async def test_token(request: Request):
         "has_bearer": auth_header and auth_header.startswith("Bearer ") if auth_header else False,
         "token_preview": auth_header[7:27] + "..." if auth_header and len(auth_header) > 27 else "No token or too short"
     }
+
+@router.post("/setup-supabase")
+async def setup_supabase():
+    """Setup Supabase tables and test connection"""
+    try:
+        from database import supabase_client, is_using_fallback
+        
+        if is_using_fallback():
+            return {
+                "success": False,
+                "message": "Using fallback database, not Supabase"
+            }
+        
+        # Test connection
+        test_response = supabase_client.table('tasks').select('id').limit(1).execute()
+        
+        return {
+            "success": True,
+            "message": "Supabase connection successful",
+            "tasks_table_exists": True,
+            "test_query_result": test_response.data
+        }
+        
+    except Exception as e:
+        return {
+            "success": False,
+            "error": str(e),
+            "message": "Supabase setup failed - check your configuration and run the SQL setup script"
+        }
+
+@router.post("/test-crud-no-auth")
+async def test_crud_no_auth():
+    """Test CRUD operations without authentication"""
+    try:
+        from database import supabase_client, is_using_fallback
+        
+        if is_using_fallback():
+            # Test fallback database
+            test_task_data = {
+                'user_id': 'test-user-crud',
+                'title': 'Test CRUD Task',
+                'status': 'pending',
+                'dueAt': None,
+                'isStarred': False,
+                'category': 'test',
+                'parent_id': None
+            }
+            
+            created_task = fallback_db.create_task(test_task_data)
+            return {
+                "success": True,
+                "message": "Fallback CRUD test successful",
+                "task": created_task
+            }
+        else:
+            # Test Supabase
+            test_task_data = {
+                'user_id': 'test-user-crud',
+                'title': 'Test CRUD Task',
+                'status': 'pending',
+                'dueAt': None,
+                'isStarred': False,
+                'category': 'test',
+                'parent_id': None
+            }
+            
+            # Try to create a task
+            response = supabase_client.table('tasks').insert(test_task_data).execute()
+            
+            if response.data:
+                return {
+                    "success": True,
+                    "message": "Supabase CRUD test successful",
+                    "task": response.data[0]
+                }
+            else:
+                return {
+                    "success": False,
+                    "message": "Supabase insert returned no data",
+                    "response": response
+                }
+        
+    except Exception as e:
+        return {
+            "success": False,
+            "error": str(e),
+            "error_type": type(e).__name__,
+            "message": "CRUD test failed"
+        }
