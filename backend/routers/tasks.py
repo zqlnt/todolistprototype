@@ -278,3 +278,141 @@ async def toggle_task_star(task_id: str, star_update: dict, current_user: User =
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"Failed to update task star: {str(e)}"
         )
+
+# PRESENTATION WORKAROUND: Fallback endpoints that always work
+@router.get("/fallback/list", response_model=TaskListResponse)
+async def list_tasks_fallback():
+    """Fallback endpoint that always works - returns all tasks from fallback DB"""
+    try:
+        tasks: List[Task] = []
+        for task_data in fallback_db.tasks.values():
+            task = Task(
+                id=task_data['id'],
+                user_id=task_data['user_id'],
+                title=task_data['title'],
+                status=task_data['status'],
+                dueAt=task_data.get('dueAt'),
+                isStarred=bool(task_data.get('isStarred', False)),
+                category=task_data.get('category'),
+                parentId=task_data.get('parent_id'),
+                inserted_at=task_data['inserted_at'],
+                updated_at=task_data['updated_at']
+            )
+            tasks.append(task)
+        # Sort: starred first then due date ascending
+        tasks.sort(key=lambda t: (not t.isStarred, t.dueAt or ""))
+        return TaskListResponse(success=True, data=tasks)
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Failed to fetch tasks: {str(e)}"
+        )
+
+@router.post("/fallback/create", response_model=TaskResponse)
+async def create_task_fallback(task: TaskCreate):
+    """Fallback endpoint that always works - creates task in fallback DB"""
+    try:
+        import uuid
+        user_id = str(uuid.uuid4())
+        
+        task_data = {
+            'user_id': user_id,
+            'title': task.title,
+            'status': 'pending',
+            'dueAt': task.due_at.isoformat() if task.due_at else None,
+            'isStarred': task.is_starred,
+            'category': task.category,
+            'parent_id': task.parent_id
+        }
+        
+        created_task_data = fallback_db.create_task(task_data)
+        
+        created_task = Task(
+            id=created_task_data['id'],
+            user_id=created_task_data['user_id'],
+            title=created_task_data['title'],
+            status=created_task_data['status'],
+            dueAt=created_task_data.get('dueAt'),
+            isStarred=bool(created_task_data.get('isStarred', False)),
+            category=created_task_data.get('category'),
+            parentId=created_task_data.get('parent_id'),
+            inserted_at=created_task_data['inserted_at'],
+            updated_at=created_task_data['updated_at']
+        )
+        
+        return TaskResponse(success=True, data=created_task, message="Task created successfully")
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Failed to create task: {str(e)}"
+        )
+
+@router.put("/fallback/update/{task_id}", response_model=TaskResponse)
+async def update_task_fallback(task_id: str, task_update: TaskUpdate):
+    """Fallback endpoint that always works - updates task in fallback DB"""
+    try:
+        if task_id not in fallback_db.tasks:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="Task not found"
+            )
+        
+        task = fallback_db.tasks[task_id]
+        
+        # Build update data
+        update_data = {}
+        if task_update.title is not None:
+            update_data['title'] = task_update.title
+        if task_update.status is not None:
+            update_data['status'] = task_update.status
+        if task_update.due_at is not None:
+            update_data['dueAt'] = task_update.due_at.isoformat()
+        if task_update.is_starred is not None:
+            update_data['isStarred'] = task_update.is_starred
+        if task_update.category is not None:
+            update_data['category'] = task_update.category
+        
+        # Update the task
+        for key, value in update_data.items():
+            if key in task:
+                task[key] = value
+        
+        task['updated_at'] = datetime.now().isoformat()
+        
+        updated_task = Task(
+            id=task['id'],
+            user_id=task['user_id'],
+            title=task['title'],
+            status=task['status'],
+            dueAt=task.get('dueAt'),
+            isStarred=bool(task.get('isStarred', False)),
+            category=task.get('category'),
+            parentId=task.get('parent_id'),
+            inserted_at=task['inserted_at'],
+            updated_at=task['updated_at']
+        )
+        
+        return TaskResponse(success=True, data=updated_task, message="Task updated successfully")
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Failed to update task: {str(e)}"
+        )
+
+@router.delete("/fallback/delete/{task_id}")
+async def delete_task_fallback(task_id: str):
+    """Fallback endpoint that always works - deletes task from fallback DB"""
+    try:
+        if task_id not in fallback_db.tasks:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="Task not found"
+            )
+        
+        del fallback_db.tasks[task_id]
+        return {"success": True, "message": "Task deleted successfully"}
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Failed to delete task: {str(e)}"
+        )
