@@ -100,7 +100,7 @@ class FallbackDatabase:
         return task
     
     def delete_task(self, task_id: str, user_id: str) -> bool:
-    """Delete a task"""
+        """Delete a task"""
         if task_id not in self.tasks:
             return False
         
