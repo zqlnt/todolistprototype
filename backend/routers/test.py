@@ -1,10 +1,11 @@
 """
 Test endpoints for debugging and creating test accounts
 """
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, HTTPException, Request
 from database import fallback_db, is_using_fallback
 from auth_utils import hash_password
 import logging
+import os
 
 router = APIRouter(prefix="/api/test", tags=["test"])
 
@@ -99,3 +100,23 @@ async def test_task_creation():
             "error": str(e),
             "error_type": type(e).__name__
         }
+
+@router.get("/test-auth")
+async def test_auth():
+    """Test authentication without requiring auth"""
+    return {
+        "message": "Auth test endpoint - no auth required",
+        "secret_key_configured": bool(os.getenv("SECRET_KEY")),
+        "secret_key_preview": os.getenv("SECRET_KEY", "")[:10] + "..." if os.getenv("SECRET_KEY") else "Not set"
+    }
+
+@router.get("/test-token")
+async def test_token(request: Request):
+    """Test if token is being sent in request"""
+    auth_header = request.headers.get("Authorization")
+    return {
+        "message": "Token test endpoint",
+        "auth_header": auth_header,
+        "has_bearer": auth_header and auth_header.startswith("Bearer ") if auth_header else False,
+        "token_preview": auth_header[7:27] + "..." if auth_header and len(auth_header) > 27 else "No token or too short"
+    }
