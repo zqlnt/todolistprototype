@@ -88,32 +88,39 @@ async def create_task(request: Request, task: TaskCreate, current_user: User = D
             
             created_task_data = response.data[0]
         
-        created_task = Task(
-            id=created_task_data['id'],
-            user_id=created_task_data['user_id'],
-            title=created_task_data['title'],
-            status=created_task_data['status'],
-            dueAt=created_task_data.get('dueAt'),
-            isStarred=bool(created_task_data['isStarred']),
-            category=created_task_data.get('category'),
-            parentId=created_task_data.get('parent_id'),
-            inserted_at=created_task_data['inserted_at'],
-            updated_at=created_task_data['updated_at']
-        )
+        print(f"DEBUG: Creating Task model with data: {created_task_data}")
+        try:
+            created_task = Task(
+                id=created_task_data['id'],
+                user_id=created_task_data['user_id'],
+                title=created_task_data['title'],
+                status=created_task_data['status'],
+                dueAt=created_task_data.get('dueAt'),
+                isStarred=bool(created_task_data['isStarred']),
+                category=created_task_data.get('category'),
+                parentId=created_task_data.get('parent_id'),
+                inserted_at=created_task_data['inserted_at'],
+                updated_at=created_task_data['updated_at']
+            )
+            print(f"DEBUG: Task model created successfully: {created_task}")
+        except Exception as model_error:
+            print(f"DEBUG: Error creating Task model: {model_error}")
+            raise
         
         # Schedule reminder if task has a due date
-        if task.due_at:
-            try:
-                await reminder_scheduler.schedule_reminder(
-                    task_id=created_task.id,
-                    user_id=current_user.id,
-                    task_title=created_task.title,
-                    due_at=task.due_at,
-                    user_email=getattr(current_user, 'email', None)
-                )
-            except Exception as e:
-                # Don't fail task creation if reminder scheduling fails
-                print(f"Warning: Failed to schedule reminder for task {created_task.id}: {e}")
+        # TEMPORARILY DISABLED FOR DEBUGGING
+        # if task.due_at:
+        #     try:
+        #         await reminder_scheduler.schedule_reminder(
+        #             task_id=created_task.id,
+        #             user_id=current_user.id,
+        #             task_title=created_task.title,
+        #             due_at=task.due_at,
+        #             user_email=getattr(current_user, 'email', None)
+        #         )
+        #     except Exception as e:
+        #         # Don't fail task creation if reminder scheduling fails
+        #         print(f"Warning: Failed to schedule reminder for task {created_task.id}: {e}")
         
         return TaskResponse(success=True, data=created_task, message="Task created successfully")
     except Exception as e:

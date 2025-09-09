@@ -96,10 +96,14 @@ async def sign_in(request: Request, signin_request: SignInRequest):
 async def sign_up(request: Request, signup_request: SignUpRequest):
     """Sign up new user with email and password"""
     try:
+        print(f"DEBUG: Signup attempt for email: {signup_request.email}")
+        print(f"DEBUG: Using fallback database: {is_using_fallback()}")
+        
         if is_using_fallback():
             # Check if user already exists
             existing_user = fallback_db.get_user_by_email(signup_request.email)
             if existing_user:
+                print(f"DEBUG: User already exists: {existing_user['id']}")
                 raise HTTPException(
                     status_code=status.HTTP_400_BAD_REQUEST,
                     detail="User already exists"
@@ -112,16 +116,19 @@ async def sign_up(request: Request, signup_request: SignUpRequest):
                 'password_hash': password_hash
             }
             user = fallback_db.create_user(user_data)
+            print(f"DEBUG: Created user: {user}")
             
             access_token = create_access_token(data={"sub": user['id'], "email": user['email']})
-            return AuthResponse(
-                access_token=access_token,
-                user={
+            response_data = {
+                "access_token": access_token,
+                "user": {
                     "id": user['id'],
                     "email": user['email'],
                     "created_at": user['created_at']
                 }
-            )
+            }
+            print(f"DEBUG: Returning response: {response_data}")
+            return AuthResponse(**response_data)
         else:
             # Use Supabase
             response = supabase_client.auth.sign_up({

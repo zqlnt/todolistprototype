@@ -5,7 +5,7 @@ from contextlib import asynccontextmanager
 import os
 from dotenv import load_dotenv
 
-from routers import tasks, auth, emails
+from routers import tasks, auth, emails, test
 from auth_utils import get_current_user_flexible
 from database import is_using_fallback
 
@@ -54,6 +54,7 @@ app.add_middleware(
 app.include_router(auth.router)
 app.include_router(tasks.router)
 app.include_router(emails.router)
+app.include_router(test.router)
 
 @app.get("/")
 async def root():
