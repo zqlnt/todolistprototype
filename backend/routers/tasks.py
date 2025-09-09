@@ -63,6 +63,7 @@ async def create_task(request: Request, task: TaskCreate, current_user: User = D
     """Create a new task"""
     try:
         print(f"DEBUG: Creating task - Title: {task.title}, Due: {task.due_at}, User: {current_user.id}")
+        print(f"DEBUG: Request headers: {dict(request.headers)}")
         task_data = {
             'user_id': current_user.id,
             'title': task.title,

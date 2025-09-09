@@ -9,6 +9,8 @@ import os
 SECRET_KEY = os.getenv("SECRET_KEY", "your-secret-key-change-in-production")
 ALGORITHM = "HS256"
 
+print(f"DEBUG: JWT SECRET_KEY: {SECRET_KEY[:10]}..." if SECRET_KEY else "No SECRET_KEY")
+
 security = HTTPBearer()
 
 async def get_current_user_flexible(request: Request, credentials: HTTPAuthorizationCredentials = Depends(security)) -> User:
