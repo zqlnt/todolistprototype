@@ -18,15 +18,20 @@ async def get_current_user_flexible(request: Request, credentials: HTTPAuthoriza
     - Session-based auth (for future merge)
     """
     
+    print(f"DEBUG: Auth attempt - Token: {credentials.credentials[:20]}..." if credentials.credentials else "No token")
+    print(f"DEBUG: Using fallback: {is_using_fallback()}")
+    
     # Try JWT first (your current system)
     try:
         if is_using_fallback():
             # Verify JWT token for fallback database
             try:
                 payload = jwt.decode(credentials.credentials, SECRET_KEY, algorithms=[ALGORITHM])
+                print(f"DEBUG: JWT payload: {payload}")
                 user_id = payload.get("sub")
                 email = payload.get("email")
                 if user_id is None or email is None:
+                    print(f"DEBUG: Missing user_id or email in payload")
                     raise HTTPException(
                         status_code=status.HTTP_401_UNAUTHORIZED,
                         detail="Invalid authentication credentials",
@@ -35,24 +40,28 @@ async def get_current_user_flexible(request: Request, credentials: HTTPAuthoriza
                 
                 user = fallback_db.get_user_by_id(user_id)
                 if user is None:
+                    print(f"DEBUG: User not found in database: {user_id}")
                     raise HTTPException(
                         status_code=status.HTTP_401_UNAUTHORIZED,
                         detail="User not found",
                         headers={"WWW-Authenticate": "Bearer"},
                     )
                 
+                print(f"DEBUG: Authentication successful for user: {user_id}")
                 return User(
                     id=user['id'],
                     email=user['email'],
                     created_at=user['created_at']
                 )
             except jwt.ExpiredSignatureError:
+                print(f"DEBUG: JWT token expired")
                 raise HTTPException(
                     status_code=status.HTTP_401_UNAUTHORIZED,
                     detail="Token expired",
                     headers={"WWW-Authenticate": "Bearer"},
                 )
-            except jwt.JWTError:
+            except jwt.JWTError as e:
+                print(f"DEBUG: JWT decode error: {e}")
                 raise HTTPException(
                     status_code=status.HTTP_401_UNAUTHORIZED,
                     detail="Invalid authentication credentials",
