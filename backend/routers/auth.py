@@ -116,7 +116,11 @@ async def sign_up(request: Request, signup_request: SignUpRequest):
             access_token = create_access_token(data={"sub": user['id'], "email": user['email']})
             return AuthResponse(
                 access_token=access_token,
-                user=user
+                user={
+                    "id": user['id'],
+                    "email": user['email'],
+                    "created_at": user['created_at']
+                }
             )
         else:
             # Use Supabase
