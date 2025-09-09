@@ -15,8 +15,9 @@ async def create_task_no_auth(request: Request, task: TaskCreate):
     try:
         print(f"DEBUG: Creating task without auth - Title: {task.title}")
         
-        # Use a default user ID for now
-        user_id = "temp-user-123"
+        # Use a default user ID for now - generate proper UUID for Supabase
+        import uuid
+        user_id = str(uuid.uuid4())
         
         task_data = {
             'user_id': user_id,
