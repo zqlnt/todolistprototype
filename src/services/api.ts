@@ -86,12 +86,11 @@ class ApiService {
 
   // Task endpoints
   async getTasks() {
-    // TEMPORARY: Use unauthenticated list endpoint hitting fallback
     return this.request<{
       success: boolean;
       data: any[];
       message?: string;
-    }>('/api/tasks/list-no-auth');
+    }>('/api/tasks/');
   }
 
   async createTask(task: {
@@ -101,12 +100,11 @@ class ApiService {
     isStarred?: boolean;
     parentId?: string | null;
   }) {
-    // TEMPORARY: Use unauthenticated endpoint to bypass auth issues
     return this.request<{
       success: boolean;
       data: any;
       message?: string;
-    }>('/api/tasks/create', {
+    }>('/api/tasks/', {
       method: 'POST',
       body: JSON.stringify(task),
     });
@@ -119,20 +117,18 @@ class ApiService {
     isStarred?: boolean;
     category?: string;
   }) {
-    // TEMPORARY: Use no-auth endpoint
     return this.request<{
       success: boolean;
       data: any;
       message?: string;
-    }>(`/api/tasks/update-no-auth/${taskId}`, {
+    }>(`/api/tasks/${taskId}`, {
       method: 'PUT',
       body: JSON.stringify(updates),
     });
   }
 
   async deleteTask(taskId: string) {
-    // TEMPORARY: Use no-auth endpoint
-    return this.request(`/api/tasks/delete-no-auth/${taskId}`, {
+    return this.request(`/api/tasks/${taskId}`, {
       method: 'DELETE',
     });
   }

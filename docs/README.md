@@ -2,7 +2,7 @@
 
 ## Overview
 
-Sentinel is a modern, intelligent productivity application built with React, TypeScript, and Supabase. It combines traditional task management with AI-powered insights and multi-platform data synchronization.
+Sentinel is a modern, intelligent productivity application built with React, TypeScript, and Supabase. It combines traditional task management with smart insights and multi-platform data synchronization.
 
 ## Architecture
 
@@ -50,7 +50,7 @@ src/
 - **Notifications** - System-wide notification management
 
 ### 4. Intelligent Features
-- **AI Assistant** - Sentinel AI for productivity insights
+- **Smart Assistant** - Sentinel assistant for productivity insights
 - **Task Suggestions** - Auto-generate tasks from emails
 - **Smart Grouping** - Organize tasks by time or category
 - **Priority Detection** - Automatic priority scoring
@@ -86,7 +86,7 @@ The application uses Zustand for state management with the following key section
 
 #### Data State
 - `tasks[]` - All user tasks from database
-- `suggestedTasks[]` - AI-generated task suggestions
+- `suggestedTasks[]` - Smart task suggestions
 - `emails[]` - Synced email data
 - `contacts[]` - User contacts
 - `chats[]` - Chat conversations
@@ -118,7 +118,7 @@ The application uses Zustand for state management with the following key section
 - **Auth** - Login/signup forms
 - **Calendar** - Calendar view with events and tasks
 - **Inbox** - Email management and sync
-- **SentinelAI** - AI chat interface
+- **SentinelAI** - Smart assistant interface
 - **Contacts** - Contact management
 - **Chats** - Messaging interface
 - **Notifications** - Notification center
@@ -245,7 +245,7 @@ toggleStar(id, current) // Toggle task priority
 
 ### Planned Features
 1. **Intelligent Subtask Generation** - Auto-create relevant subtasks
-2. **LLM Integration** - Real AI responses in Sentinel AI
+2. **Enhanced Assistant** - Improved responses in Sentinel assistant
 3. **Real Email Sync** - Connect to actual email providers
 4. **Calendar Sync** - Two-way calendar integration
 5. **Collaboration** - Share tasks and projects
