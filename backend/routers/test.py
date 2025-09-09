@@ -209,3 +209,53 @@ async def test_crud_no_auth():
             "error_type": type(e).__name__,
             "message": "CRUD test failed"
         }
+
+@router.post("/create-task-no-auth")
+async def create_task_no_auth(request: Request):
+    """Create task without authentication for testing"""
+    try:
+        from database import supabase_client, is_using_fallback
+        from models import TaskCreate
+        import json
+        
+        # Get task data from request body
+        body = await request.json()
+        task_data = {
+            'user_id': body.get('user_id', 'test-user'),
+            'title': body.get('title', 'Test Task'),
+            'status': 'pending',
+            'dueAt': body.get('dueAt'),
+            'isStarred': body.get('isStarred', False),
+            'category': body.get('category'),
+            'parent_id': body.get('parentId')
+        }
+        
+        if is_using_fallback():
+            # Use fallback database
+            created_task_data = fallback_db.create_task(task_data)
+        else:
+            # Use Supabase
+            response = supabase_client.table('tasks').insert(task_data).execute()
+            
+            if not response.data:
+                return {
+                    "success": False,
+                    "message": "Failed to create task in Supabase",
+                    "error": "No data returned"
+                }
+            
+            created_task_data = response.data[0]
+        
+        return {
+            "success": True,
+            "message": "Task created successfully",
+            "task": created_task_data
+        }
+        
+    except Exception as e:
+        return {
+            "success": False,
+            "error": str(e),
+            "error_type": type(e).__name__,
+            "message": "Task creation failed"
+        }
