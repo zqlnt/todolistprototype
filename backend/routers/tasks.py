@@ -62,6 +62,7 @@ async def list_tasks(request: Request, current_user: User = Depends(get_current_
 async def create_task(request: Request, task: TaskCreate, current_user: User = Depends(get_current_user_flexible)):
     """Create a new task"""
     try:
+        print(f"DEBUG: Creating task - Title: {task.title}, Due: {task.due_at}, User: {current_user.id}")
         task_data = {
             'user_id': current_user.id,
             'title': task.title,
@@ -108,7 +109,7 @@ async def create_task(request: Request, task: TaskCreate, current_user: User = D
                     user_id=current_user.id,
                     task_title=created_task.title,
                     due_at=task.due_at,
-                    user_email=current_user.email
+                    user_email=getattr(current_user, 'email', None)
                 )
             except Exception as e:
                 # Don't fail task creation if reminder scheduling fails
@@ -184,7 +185,7 @@ async def update_task(request: Request, task_id: str, task_update: TaskUpdate, c
                         user_id=current_user.id,
                         task_title=updated_task.title,
                         due_at=task_update.due_at,
-                        user_email=current_user.email
+                        user_email=getattr(current_user, 'email', None)
                     )
             except Exception as e:
                 # Don't fail task update if reminder scheduling fails
