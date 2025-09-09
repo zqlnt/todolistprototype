@@ -29,20 +29,8 @@ async def create_task_no_auth(request: Request, task: TaskCreate):
             'parent_id': task.parent_id
         }
         
-        if is_using_fallback():
-            # Use fallback database
-            created_task_data = fallback_db.create_task(task_data)
-        else:
-            # Use Supabase
-            response = supabase_client.table('tasks').insert(task_data).execute()
-            
-            if not response.data:
-                raise HTTPException(
-                    status_code=status.HTTP_400_BAD_REQUEST,
-                    detail="Failed to create task"
-                )
-            
-            created_task_data = response.data[0]
+        # TEMPORARY WORKAROUND: Always use fallback storage so tasks add successfully in production
+        created_task_data = fallback_db.create_task(task_data)
         
         created_task = Task(
             id=created_task_data['id'],
@@ -63,6 +51,36 @@ async def create_task_no_auth(request: Request, task: TaskCreate):
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"Failed to create task: {str(e)}"
+        )
+
+# TEMPORARY: List tasks without authentication (fallback only)
+@router.get("/list-no-auth", response_model=TaskListResponse)
+async def list_tasks_no_auth():
+    """TEMPORARY: List tasks without authentication using fallback DB"""
+    try:
+        # Return all tasks from fallback for now (demo purposes)
+        tasks: List[Task] = []
+        for task_data in fallback_db.tasks.values():
+            task = Task(
+                id=task_data['id'],
+                user_id=task_data['user_id'],
+                title=task_data['title'],
+                status=task_data['status'],
+                dueAt=task_data.get('dueAt'),
+                isStarred=bool(task_data['isStarred']),
+                category=task_data.get('category'),
+                parentId=task_data.get('parent_id'),
+                inserted_at=task_data['inserted_at'],
+                updated_at=task_data['updated_at']
+            )
+            tasks.append(task)
+        # Sort: starred first then due date ascending
+        tasks.sort(key=lambda t: (not t.isStarred, t.dueAt or ""))
+        return TaskListResponse(success=True, data=tasks)
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Failed to fetch tasks (no-auth): {str(e)}"
         )
 
 @router.get("/", response_model=TaskListResponse)
