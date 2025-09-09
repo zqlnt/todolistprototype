@@ -67,7 +67,7 @@ async def list_tasks_no_auth():
                 title=task_data['title'],
                 status=task_data['status'],
                 dueAt=task_data.get('dueAt'),
-                isStarred=bool(task_data['isStarred']),
+                isStarred=bool(task_data.get('isStarred', False)),
                 category=task_data.get('category'),
                 parentId=task_data.get('parent_id'),
                 inserted_at=task_data['inserted_at'],
