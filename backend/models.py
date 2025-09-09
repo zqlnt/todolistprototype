@@ -1,5 +1,5 @@
-from pydantic import BaseModel, Field
-from typing import Optional, Literal
+from pydantic import BaseModel, Field, field_validator
+from typing import Optional, Literal, Union
 from datetime import datetime
 from uuid import UUID
 
@@ -25,6 +25,22 @@ class TaskBase(BaseModel):
     is_starred: bool = Field(False, alias="isStarred")
     category: Optional[str] = None
     parent_id: Optional[str] = Field(None, alias="parentId")
+    
+    @field_validator('due_at', mode='before')
+    @classmethod
+    def parse_due_at(cls, v):
+        if v is None or v == '':
+            return None
+        if isinstance(v, str):
+            try:
+                return datetime.fromisoformat(v.replace('Z', '+00:00'))
+            except ValueError:
+                # Try parsing as ISO format
+                try:
+                    return datetime.fromisoformat(v)
+                except ValueError:
+                    return None
+        return v
 
 class TaskCreate(TaskBase):
     pass
@@ -35,6 +51,22 @@ class TaskUpdate(BaseModel):
     due_at: Optional[datetime] = Field(None, alias="dueAt")
     is_starred: Optional[bool] = Field(None, alias="isStarred")
     category: Optional[str] = None
+    
+    @field_validator('due_at', mode='before')
+    @classmethod
+    def parse_due_at(cls, v):
+        if v is None or v == '':
+            return None
+        if isinstance(v, str):
+            try:
+                return datetime.fromisoformat(v.replace('Z', '+00:00'))
+            except ValueError:
+                # Try parsing as ISO format
+                try:
+                    return datetime.fromisoformat(v)
+                except ValueError:
+                    return None
+        return v
 
 class Task(TaskBase):
     id: str
