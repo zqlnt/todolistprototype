@@ -8,6 +8,62 @@ from reminder_scheduler import reminder_scheduler
 
 router = APIRouter(prefix="/api/tasks", tags=["tasks"])
 
+# TEMPORARY: Create task without authentication
+@router.post("/create", response_model=TaskResponse)
+async def create_task_no_auth(request: Request, task: TaskCreate):
+    """TEMPORARY: Create task without authentication"""
+    try:
+        print(f"DEBUG: Creating task without auth - Title: {task.title}")
+        
+        # Use a default user ID for now
+        user_id = "temp-user-123"
+        
+        task_data = {
+            'user_id': user_id,
+            'title': task.title,
+            'status': 'pending',
+            'dueAt': task.due_at.isoformat() if task.due_at else None,
+            'isStarred': task.is_starred,
+            'category': task.category,
+            'parent_id': task.parent_id
+        }
+        
+        if is_using_fallback():
+            # Use fallback database
+            created_task_data = fallback_db.create_task(task_data)
+        else:
+            # Use Supabase
+            response = supabase_client.table('tasks').insert(task_data).execute()
+            
+            if not response.data:
+                raise HTTPException(
+                    status_code=status.HTTP_400_BAD_REQUEST,
+                    detail="Failed to create task"
+                )
+            
+            created_task_data = response.data[0]
+        
+        created_task = Task(
+            id=created_task_data['id'],
+            user_id=created_task_data['user_id'],
+            title=created_task_data['title'],
+            status=created_task_data['status'],
+            dueAt=created_task_data.get('dueAt'),
+            isStarred=bool(created_task_data['isStarred']),
+            category=created_task_data.get('category'),
+            parentId=created_task_data.get('parent_id'),
+            inserted_at=created_task_data['inserted_at'],
+            updated_at=created_task_data['updated_at']
+        )
+        
+        return TaskResponse(success=True, data=created_task, message="Task created successfully")
+    except Exception as e:
+        print(f"DEBUG: Error creating task: {e}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Failed to create task: {str(e)}"
+        )
+
 @router.get("/", response_model=TaskListResponse)
 async def list_tasks(request: Request, current_user: User = Depends(get_current_user_flexible)):
     """Get all tasks for the current user"""

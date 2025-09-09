@@ -3,7 +3,7 @@ Test endpoints for debugging and creating test accounts
 """
 from fastapi import APIRouter, HTTPException, Request
 from database import fallback_db, is_using_fallback
-from auth_utils import hash_password
+from routers.auth import hash_password
 import logging
 import os
 

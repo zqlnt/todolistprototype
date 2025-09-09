@@ -100,7 +100,7 @@ class FallbackDatabase:
         return task
     
     def delete_task(self, task_id: str, user_id: str) -> bool:
-    """Delete a task"""
+        """Delete a task"""
         if task_id not in self.tasks:
             return False
         
@@ -136,7 +136,7 @@ def test_database_connection() -> Dict[str, Any]:
                 "message": "Successfully connected to Supabase",
                 "supabase_configured": True
             }
-    except Exception as e:
+        except Exception as e:
             return {
                 "status": "error",
                 "message": f"Supabase connection failed: {str(e)}",
