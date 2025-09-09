@@ -136,7 +136,7 @@ def test_database_connection() -> Dict[str, Any]:
                 "message": "Successfully connected to Supabase",
                 "supabase_configured": True
             }
-    except Exception as e:
+        except Exception as e:
             return {
                 "status": "error",
                 "message": f"Supabase connection failed: {str(e)}",
