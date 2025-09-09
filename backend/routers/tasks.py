@@ -4,6 +4,7 @@ from typing import List, Optional
 from database import supabase_client, fallback_db, is_using_fallback
 from models import Task, TaskCreate, TaskUpdate, TaskResponse, TaskListResponse, User
 from auth_utils import get_current_user_flexible
+from reminder_scheduler import reminder_scheduler
 
 router = APIRouter(prefix="/api/tasks", tags=["tasks"])
 
@@ -99,6 +100,20 @@ async def create_task(request: Request, task: TaskCreate, current_user: User = D
             updated_at=created_task_data['updated_at']
         )
         
+        # Schedule reminder if task has a due date
+        if task.due_at:
+            try:
+                await reminder_scheduler.schedule_reminder(
+                    task_id=created_task.id,
+                    user_id=current_user.id,
+                    task_title=created_task.title,
+                    due_at=task.due_at,
+                    user_email=current_user.email
+                )
+            except Exception as e:
+                # Don't fail task creation if reminder scheduling fails
+                print(f"Warning: Failed to schedule reminder for task {created_task.id}: {e}")
+        
         return TaskResponse(success=True, data=created_task, message="Task created successfully")
     except Exception as e:
         raise HTTPException(
@@ -156,6 +171,25 @@ async def update_task(request: Request, task_id: str, task_update: TaskUpdate, c
             updated_at=updated_task_data['updated_at']
         )
         
+        # Reschedule reminder if due date was updated
+        if task_update.due_at is not None:
+            try:
+                # Cancel existing reminder
+                reminder_scheduler.cancel_reminder(task_id)
+                
+                # Schedule new reminder if due date is in the future
+                if task_update.due_at:
+                    await reminder_scheduler.schedule_reminder(
+                        task_id=updated_task.id,
+                        user_id=current_user.id,
+                        task_title=updated_task.title,
+                        due_at=task_update.due_at,
+                        user_email=current_user.email
+                    )
+            except Exception as e:
+                # Don't fail task update if reminder scheduling fails
+                print(f"Warning: Failed to reschedule reminder for task {updated_task.id}: {e}")
+        
         return TaskResponse(success=True, data=updated_task, message="Task updated successfully")
     except Exception as e:
         raise HTTPException(
@@ -184,6 +218,12 @@ async def delete_task(request: Request, task_id: str, current_user: User = Depen
                     status_code=status.HTTP_404_NOT_FOUND,
                     detail="Task not found"
                 )
+        
+        # Cancel any scheduled reminder for this task
+        try:
+            reminder_scheduler.cancel_reminder(task_id)
+        except Exception as e:
+            print(f"Warning: Failed to cancel reminder for deleted task {task_id}: {e}")
         
         return {"success": True, "message": "Task deleted successfully"}
     except Exception as e:
