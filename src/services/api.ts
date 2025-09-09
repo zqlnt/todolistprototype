@@ -86,20 +86,12 @@ class ApiService {
 
   // Task endpoints
   async getTasks() {
-    try {
-      return await this.request<{
-        success: boolean;
-        data: any[];
-        message?: string;
-      }>('/api/tasks/');
-    } catch (error) {
-      // Fallback to always-working endpoint
-      return this.request<{
-        success: boolean;
-        data: any[];
-        message?: string;
-      }>('/api/tasks/fallback/list');
-    }
+    // PRESENTATION: Always use fallback endpoint for guaranteed functionality
+    return this.request<{
+      success: boolean;
+      data: any[];
+      message?: string;
+    }>('/api/tasks/fallback/list');
   }
 
   async createTask(task: {
@@ -109,26 +101,15 @@ class ApiService {
     isStarred?: boolean;
     parentId?: string | null;
   }) {
-    try {
-      return await this.request<{
-        success: boolean;
-        data: any;
-        message?: string;
-      }>('/api/tasks/', {
-        method: 'POST',
-        body: JSON.stringify(task),
-      });
-    } catch (error) {
-      // Fallback to always-working endpoint
-      return this.request<{
-        success: boolean;
-        data: any;
-        message?: string;
-      }>('/api/tasks/fallback/create', {
-        method: 'POST',
-        body: JSON.stringify(task),
-      });
-    }
+    // PRESENTATION: Always use fallback endpoint for guaranteed functionality
+    return this.request<{
+      success: boolean;
+      data: any;
+      message?: string;
+    }>('/api/tasks/fallback/create', {
+      method: 'POST',
+      body: JSON.stringify(task),
+    });
   }
 
   async updateTask(taskId: string, updates: {
@@ -138,39 +119,22 @@ class ApiService {
     isStarred?: boolean;
     category?: string;
   }) {
-    try {
-      return await this.request<{
-        success: boolean;
-        data: any;
-        message?: string;
-      }>(`/api/tasks/${taskId}`, {
-        method: 'PUT',
-        body: JSON.stringify(updates),
-      });
-    } catch (error) {
-      // Fallback to always-working endpoint
-      return this.request<{
-        success: boolean;
-        data: any;
-        message?: string;
-      }>(`/api/tasks/fallback/update/${taskId}`, {
-        method: 'PUT',
-        body: JSON.stringify(updates),
-      });
-    }
+    // PRESENTATION: Always use fallback endpoint for guaranteed functionality
+    return this.request<{
+      success: boolean;
+      data: any;
+      message?: string;
+    }>(`/api/tasks/fallback/update/${taskId}`, {
+      method: 'PUT',
+      body: JSON.stringify(updates),
+    });
   }
 
   async deleteTask(taskId: string) {
-    try {
-      return await this.request(`/api/tasks/${taskId}`, {
-        method: 'DELETE',
-      });
-    } catch (error) {
-      // Fallback to always-working endpoint
-      return this.request(`/api/tasks/fallback/delete/${taskId}`, {
-        method: 'DELETE',
-      });
-    }
+    // PRESENTATION: Always use fallback endpoint for guaranteed functionality
+    return this.request(`/api/tasks/fallback/delete/${taskId}`, {
+      method: 'DELETE',
+    });
   }
 
   async toggleTaskStatus(taskId: string) {
