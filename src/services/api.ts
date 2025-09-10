@@ -86,12 +86,21 @@ class ApiService {
 
   // Task endpoints
   async getTasks() {
-    // PRESENTATION: Always use fallback endpoint for guaranteed functionality
-    return this.request<{
-      success: boolean;
-      data: any[];
-      message?: string;
-    }>('/api/tasks/fallback/list');
+    try {
+      // Try real Supabase endpoint first
+      return await this.request<{
+        success: boolean;
+        data: any[];
+        message?: string;
+      }>('/api/tasks/');
+    } catch (error) {
+      // Fallback to fallback endpoint if Supabase fails
+      return this.request<{
+        success: boolean;
+        data: any[];
+        message?: string;
+      }>('/api/tasks/fallback/list');
+    }
   }
 
   async createTask(task: {
@@ -101,15 +110,27 @@ class ApiService {
     isStarred?: boolean;
     parentId?: string | null;
   }) {
-    // PRESENTATION: Always use fallback endpoint for guaranteed functionality
-    return this.request<{
-      success: boolean;
-      data: any;
-      message?: string;
-    }>('/api/tasks/fallback/create', {
-      method: 'POST',
-      body: JSON.stringify(task),
-    });
+    try {
+      // Try real Supabase endpoint first
+      return await this.request<{
+        success: boolean;
+        data: any;
+        message?: string;
+      }>('/api/tasks/', {
+        method: 'POST',
+        body: JSON.stringify(task),
+      });
+    } catch (error) {
+      // Fallback to fallback endpoint if Supabase fails
+      return this.request<{
+        success: boolean;
+        data: any;
+        message?: string;
+      }>('/api/tasks/fallback/create', {
+        method: 'POST',
+        body: JSON.stringify(task),
+      });
+    }
   }
 
   async updateTask(taskId: string, updates: {
@@ -119,22 +140,41 @@ class ApiService {
     isStarred?: boolean;
     category?: string;
   }) {
-    // PRESENTATION: Always use fallback endpoint for guaranteed functionality
-    return this.request<{
-      success: boolean;
-      data: any;
-      message?: string;
-    }>(`/api/tasks/fallback/update/${taskId}`, {
-      method: 'PUT',
-      body: JSON.stringify(updates),
-    });
+    try {
+      // Try real Supabase endpoint first
+      return await this.request<{
+        success: boolean;
+        data: any;
+        message?: string;
+      }>(`/api/tasks/${taskId}`, {
+        method: 'PUT',
+        body: JSON.stringify(updates),
+      });
+    } catch (error) {
+      // Fallback to fallback endpoint if Supabase fails
+      return this.request<{
+        success: boolean;
+        data: any;
+        message?: string;
+      }>(`/api/tasks/fallback/update/${taskId}`, {
+        method: 'PUT',
+        body: JSON.stringify(updates),
+      });
+    }
   }
 
   async deleteTask(taskId: string) {
-    // PRESENTATION: Always use fallback endpoint for guaranteed functionality
-    return this.request(`/api/tasks/fallback/delete/${taskId}`, {
-      method: 'DELETE',
-    });
+    try {
+      // Try real Supabase endpoint first
+      return await this.request(`/api/tasks/${taskId}`, {
+        method: 'DELETE',
+      });
+    } catch (error) {
+      // Fallback to fallback endpoint if Supabase fails
+      return this.request(`/api/tasks/fallback/delete/${taskId}`, {
+        method: 'DELETE',
+      });
+    }
   }
 
   async toggleTaskStatus(taskId: string) {
@@ -144,11 +184,19 @@ class ApiService {
   }
 
   async toggleTaskStar(taskId: string) {
-    // PRESENTATION: Use fallback endpoint for guaranteed functionality
-    return this.request(`/api/tasks/fallback/update/${taskId}`, {
-      method: 'PUT',
-      body: JSON.stringify({ isStarred: true }),
-    });
+    try {
+      // Try real Supabase endpoint first
+      return await this.request(`/api/tasks/${taskId}`, {
+        method: 'PUT',
+        body: JSON.stringify({ isStarred: true }),
+      });
+    } catch (error) {
+      // Fallback to fallback endpoint if Supabase fails
+      return this.request(`/api/tasks/fallback/update/${taskId}`, {
+        method: 'PUT',
+        body: JSON.stringify({ isStarred: true }),
+      });
+    }
   }
 
   // Email endpoints
