@@ -84,6 +84,7 @@ async def create_task(request: Request, task: TaskCreate, current_user: User = D
             
             # Get the Supabase user ID for RLS
             print(f"🔍 DEBUG: Original user_id: {task_data['user_id']}")
+            print(f"🔍 DEBUG: About to call get_user with token: {access_token[:50]}...")
             supabase_user = user_supabase.auth.get_user(access_token)
             print(f"🔍 DEBUG: Supabase user response: {supabase_user}")
             if not supabase_user.user:
