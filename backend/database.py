@@ -118,7 +118,6 @@ def is_using_fallback() -> bool:
     """Check if we should use the fallback database instead of Supabase"""
     return supabase_client is None or not SUPABASE_URL or not SUPABASE_KEY
 
-# Test database connection
 def test_database_connection() -> Dict[str, Any]:
     """Test database connection and return status"""
     if is_using_fallback():
