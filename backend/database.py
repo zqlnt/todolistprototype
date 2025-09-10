@@ -13,12 +13,18 @@ SUPABASE_KEY = os.getenv("SUPABASE_ANON_KEY", "")
 
 # Initialize Supabase client
 supabase_client: Optional[Client] = None
+print(f"SUPABASE_URL: {SUPABASE_URL[:20]}..." if SUPABASE_URL else "SUPABASE_URL: None")
+print(f"SUPABASE_KEY: {SUPABASE_KEY[:20]}..." if SUPABASE_KEY else "SUPABASE_KEY: None")
+
 if SUPABASE_URL and SUPABASE_KEY:
     try:
         supabase_client = create_client(SUPABASE_URL, SUPABASE_KEY)
+        print("✅ Supabase client initialized successfully")
     except Exception as e:
-        print(f"Failed to initialize Supabase client: {e}")
+        print(f"❌ Failed to initialize Supabase client: {e}")
         supabase_client = None
+else:
+    print("❌ Missing Supabase environment variables")
 
 # Fallback in-memory database for development/testing
 class FallbackDatabase:
