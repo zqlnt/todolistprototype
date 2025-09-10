@@ -2,23 +2,33 @@ from fastapi import APIRouter, HTTPException, Depends, status
 from fastapi import Request
 from typing import List, Optional
 from datetime import datetime
-from database import supabase_client, fallback_db, is_using_fallback
+from database import supabase_client, fallback_db, is_using_fallback, get_supabase_with_auth
 from models import Task, TaskCreate, TaskUpdate, TaskResponse, TaskListResponse, User
 from auth_utils import get_current_user_flexible
 from reminder_scheduler import reminder_scheduler
 
 router = APIRouter(prefix="/api/tasks", tags=["tasks"])
 
+
 @router.get("/", response_model=TaskListResponse)
-async def list_tasks(current_user: User = Depends(get_current_user_flexible)):
+async def list_tasks(request: Request, current_user: User = Depends(get_current_user_flexible)):
     """Get all tasks for the current user"""
     try:
         if is_using_fallback():
             # Use fallback database
             task_data_list = fallback_db.get_tasks_by_user(current_user.id)
         else:
-            # Use Supabase
-            response = supabase_client.table('tasks').select('*').eq('user_id', current_user.id).execute()
+            # Use Supabase with user's JWT token
+            auth_header = request.headers.get("Authorization")
+            if not auth_header or not auth_header.startswith("Bearer "):
+                raise HTTPException(status_code=401, detail="Missing or invalid authorization header")
+            
+            access_token = auth_header.split(" ")[1]
+            user_supabase = get_supabase_with_auth(access_token)
+            if not user_supabase:
+                raise HTTPException(status_code=500, detail="Failed to create authenticated Supabase client")
+            
+            response = user_supabase.table('tasks').select('*').eq('user_id', current_user.id).execute()
             task_data_list = response.data
         
         tasks: List[Task] = []

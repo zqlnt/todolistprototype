@@ -124,6 +124,19 @@ def is_using_fallback() -> bool:
     """Check if we should use the fallback database instead of Supabase"""
     return supabase_client is None or not SUPABASE_URL or not SUPABASE_KEY
 
+def get_supabase_with_auth(access_token: str):
+    """Create a Supabase client with user's access token for RLS"""
+    if not SUPABASE_URL or not SUPABASE_KEY:
+        return None
+    try:
+        client = create_client(SUPABASE_URL, SUPABASE_KEY)
+        # Set the user's access token for RLS
+        client.auth.set_session(access_token=access_token, refresh_token="")
+        return client
+    except Exception as e:
+        print(f"Failed to create authenticated Supabase client: {e}")
+        return None
+
 def test_database_connection() -> Dict[str, Any]:
     """Test database connection and return status"""
     if is_using_fallback():
