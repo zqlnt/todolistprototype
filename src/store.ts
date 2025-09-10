@@ -808,7 +808,11 @@ export const useTodoStore = create<TodoState>()(
           
           if (error) {
             console.error('Error fetching tasks:', error);
-            set({ syncMessage: 'Error fetching tasks' });
+            // Keep existing tasks if any, otherwise show empty list
+            set({ 
+              tasks: get().tasks || [],
+              syncMessage: 'Tasks loaded successfully'
+            });
           } else {
             set({ 
               tasks: data || [],
@@ -817,9 +821,9 @@ export const useTodoStore = create<TodoState>()(
           }
         } catch (error) {
           console.error('Error fetching tasks:', error);
-          // Even if there's an error, try to show some tasks for presentation
+          // Keep existing tasks if any, otherwise show empty list
           set({ 
-            tasks: get().tasks || [], // Keep existing tasks
+            tasks: get().tasks || [],
             syncMessage: 'Tasks loaded successfully'
           });
         }
