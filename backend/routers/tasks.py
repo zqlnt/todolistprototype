@@ -82,6 +82,13 @@ async def create_task(request: Request, task: TaskCreate, current_user: User = D
             if not user_supabase:
                 raise HTTPException(status_code=500, detail="Failed to create authenticated Supabase client")
             
+            # Get the Supabase user ID for RLS
+            supabase_user = user_supabase.auth.get_user(access_token)
+            if not supabase_user.user:
+                raise HTTPException(status_code=401, detail="Invalid user")
+            
+            # Use Supabase user ID instead of JWT user ID
+            task_data['user_id'] = supabase_user.user.id
             print(f"Inserting task data: {task_data}")
             try:
                 response = user_supabase.table('tasks').insert(task_data).execute()
