@@ -7,7 +7,14 @@ from uuid import UUID
 class User(BaseModel):
     id: str
     email: str
-    created_at: str
+    created_at: Union[str, datetime]
+    
+    @field_validator('created_at', mode='before')
+    @classmethod
+    def parse_created_at(cls, v):
+        if isinstance(v, datetime):
+            return v.isoformat()
+        return v
 
 class UserProfile(BaseModel):
     id: str
