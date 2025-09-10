@@ -72,8 +72,17 @@ async def create_task(request: Request, task: TaskCreate, current_user: User = D
             # Use fallback database
             created_task_data = fallback_db.create_task(task_data)
         else:
-            # Use Supabase
-            response = supabase_client.table('tasks').insert(task_data).execute()
+            # Use Supabase with user's JWT token
+            auth_header = request.headers.get("Authorization")
+            if not auth_header or not auth_header.startswith("Bearer "):
+                raise HTTPException(status_code=401, detail="Missing or invalid authorization header")
+            
+            access_token = auth_header.split(" ")[1]
+            user_supabase = get_supabase_with_auth(access_token)
+            if not user_supabase:
+                raise HTTPException(status_code=500, detail="Failed to create authenticated Supabase client")
+            
+            response = user_supabase.table('tasks').insert(task_data).execute()
             
             if not response.data:
                 raise HTTPException(
@@ -140,8 +149,17 @@ async def update_task(task_id: str, task_update: TaskUpdate, current_user: User 
                     detail="Task not found"
                 )
         else:
-            # Use Supabase
-            response = supabase_client.table('tasks').update(update_data).eq('id', task_id).eq('user_id', current_user.id).execute()
+            # Use Supabase with user's JWT token
+            auth_header = request.headers.get("Authorization")
+            if not auth_header or not auth_header.startswith("Bearer "):
+                raise HTTPException(status_code=401, detail="Missing or invalid authorization header")
+            
+            access_token = auth_header.split(" ")[1]
+            user_supabase = get_supabase_with_auth(access_token)
+            if not user_supabase:
+                raise HTTPException(status_code=500, detail="Failed to create authenticated Supabase client")
+            
+            response = user_supabase.table('tasks').update(update_data).eq('id', task_id).eq('user_id', current_user.id).execute()
             
             if not response.data:
                 raise HTTPException(
@@ -197,8 +215,17 @@ async def delete_task(task_id: str, current_user: User = Depends(get_current_use
                     detail="Task not found"
                 )
         else:
-            # Use Supabase
-            response = supabase_client.table('tasks').delete().eq('id', task_id).eq('user_id', current_user.id).execute()
+            # Use Supabase with user's JWT token
+            auth_header = request.headers.get("Authorization")
+            if not auth_header or not auth_header.startswith("Bearer "):
+                raise HTTPException(status_code=401, detail="Missing or invalid authorization header")
+            
+            access_token = auth_header.split(" ")[1]
+            user_supabase = get_supabase_with_auth(access_token)
+            if not user_supabase:
+                raise HTTPException(status_code=500, detail="Failed to create authenticated Supabase client")
+            
+            response = user_supabase.table('tasks').delete().eq('id', task_id).eq('user_id', current_user.id).execute()
             
             if not response.data:
                 raise HTTPException(
@@ -238,8 +265,17 @@ async def update_task_status(task_id: str, status_update: dict, current_user: Us
                     detail="Task not found"
                 )
         else:
-            # Use Supabase
-            response = supabase_client.table('tasks').update({'status': new_status}).eq('id', task_id).eq('user_id', current_user.id).execute()
+            # Use Supabase with user's JWT token
+            auth_header = request.headers.get("Authorization")
+            if not auth_header or not auth_header.startswith("Bearer "):
+                raise HTTPException(status_code=401, detail="Missing or invalid authorization header")
+            
+            access_token = auth_header.split(" ")[1]
+            user_supabase = get_supabase_with_auth(access_token)
+            if not user_supabase:
+                raise HTTPException(status_code=500, detail="Failed to create authenticated Supabase client")
+            
+            response = user_supabase.table('tasks').update({'status': new_status}).eq('id', task_id).eq('user_id', current_user.id).execute()
             
             if not response.data:
                 raise HTTPException(
@@ -271,8 +307,17 @@ async def toggle_task_star(task_id: str, star_update: dict, current_user: User =
                     detail="Task not found"
                 )
         else:
-            # Use Supabase
-            response = supabase_client.table('tasks').update({'isStarred': is_starred}).eq('id', task_id).eq('user_id', current_user.id).execute()
+            # Use Supabase with user's JWT token
+            auth_header = request.headers.get("Authorization")
+            if not auth_header or not auth_header.startswith("Bearer "):
+                raise HTTPException(status_code=401, detail="Missing or invalid authorization header")
+            
+            access_token = auth_header.split(" ")[1]
+            user_supabase = get_supabase_with_auth(access_token)
+            if not user_supabase:
+                raise HTTPException(status_code=500, detail="Failed to create authenticated Supabase client")
+            
+            response = user_supabase.table('tasks').update({'isStarred': is_starred}).eq('id', task_id).eq('user_id', current_user.id).execute()
             
             if not response.data:
                 raise HTTPException(
