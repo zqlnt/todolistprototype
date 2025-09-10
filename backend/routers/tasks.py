@@ -62,8 +62,8 @@ async def create_task(request: Request, task: TaskCreate, current_user: User = D
             'user_id': current_user.id,
             'title': task.title,
             'status': 'pending',
-            'dueAt': task.due_at.isoformat() if task.due_at else None,
-            'isStarred': task.is_starred,
+            'due_at': task.due_at.isoformat() if task.due_at else None,
+            'is_starred': task.is_starred,
             'category': task.category,
             'parent_id': task.parent_id
         }
@@ -82,12 +82,21 @@ async def create_task(request: Request, task: TaskCreate, current_user: User = D
             if not user_supabase:
                 raise HTTPException(status_code=500, detail="Failed to create authenticated Supabase client")
             
-            response = user_supabase.table('tasks').insert(task_data).execute()
-            
-            if not response.data:
+            print(f"Inserting task data: {task_data}")
+            try:
+                response = user_supabase.table('tasks').insert(task_data).execute()
+                print(f"Supabase response: {response}")
+                
+                if not response.data:
+                    raise HTTPException(
+                        status_code=status.HTTP_400_BAD_REQUEST,
+                        detail="Failed to create task"
+                    )
+            except Exception as e:
+                print(f"Supabase insert error: {e}")
                 raise HTTPException(
-                    status_code=status.HTTP_400_BAD_REQUEST,
-                    detail="Failed to create task"
+                    status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                    detail=f"Database error: {str(e)}"
                 )
             
             created_task_data = response.data[0]
