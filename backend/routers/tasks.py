@@ -93,6 +93,7 @@ async def create_task(request: Request, task: TaskCreate, current_user: User = D
             old_user_id = task_data['user_id']
             task_data['user_id'] = supabase_user.user.id
             print(f"🔍 DEBUG: Changed user_id from {old_user_id} to {task_data['user_id']}")
+            print(f"🔍 DEBUG: auth.uid() should be: {supabase_user.user.id}")
             print(f"🔍 DEBUG: Inserting task data: {task_data}")
             try:
                 response = user_supabase.table('tasks').insert(task_data).execute()
