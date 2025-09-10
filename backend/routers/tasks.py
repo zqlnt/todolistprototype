@@ -62,8 +62,8 @@ async def create_task(request: Request, task: TaskCreate, current_user: User = D
             'user_id': current_user.id,
             'title': task.title,
             'status': 'pending',
-            'due_at': task.due_at.isoformat() if task.due_at else None,
-            'is_starred': task.is_starred,
+            'dueAt': task.due_at.isoformat() if task.due_at else None,
+            'isStarred': task.is_starred,
             'category': task.category,
             'parent_id': task.parent_id
         }
