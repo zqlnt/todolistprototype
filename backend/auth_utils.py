@@ -6,7 +6,7 @@ import jwt
 import os
 
 # JWT configuration
-SECRET_KEY = os.getenv("SECRET_KEY", "your-secret-key-change-in-production")
+SECRET_KEY = os.getenv("JWT_SECRET_KEY", "your-secret-key-change-in-production")
 ALGORITHM = "HS256"
 
 security = HTTPBearer()
@@ -57,22 +57,31 @@ async def get_current_user_flexible(request: Request, credentials: HTTPAuthoriza
                 )
         else:
             # Verify JWT token with Supabase
-            response = supabase_client.auth.get_user(credentials.credentials)
-            if response.user is None:
+            try:
+                response = supabase_client.auth.get_user(credentials.credentials)
+                if response.user is None:
+                    raise HTTPException(
+                        status_code=status.HTTP_401_UNAUTHORIZED,
+                        detail="Invalid authentication credentials",
+                        headers={"WWW-Authenticate": "Bearer"},
+                    )
+                
+                return User(
+                    id=response.user.id,
+                    email=response.user.email,
+                    created_at=response.user.created_at
+                )
+            except Exception as e:
+                print(f"Supabase auth error: {e}")
                 raise HTTPException(
                     status_code=status.HTTP_401_UNAUTHORIZED,
                     detail="Invalid authentication credentials",
                     headers={"WWW-Authenticate": "Bearer"},
                 )
-            
-            return User(
-                id=response.user.id,
-                email=response.user.email,
-                created_at=response.user.created_at
-            )
     except HTTPException:
         raise
-    except Exception:
+    except Exception as e:
+        print(f"Auth error: {e}")
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Invalid authentication credentials",
