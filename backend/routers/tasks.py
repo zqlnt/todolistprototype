@@ -163,8 +163,21 @@ async def update_task(task_id: str, task_update: TaskUpdate, current_user: User 
             supabase_client = create_client(SUPABASE_URL, SUPABASE_KEY)
             
             print(f"🔍 UPDATE DEBUG: Updating task {task_id} with data: {update_data}")
-            response = supabase_client.table('tasks').update(update_data).eq('id', task_id).execute()
-            print(f"🔍 UPDATE DEBUG: Supabase response: {response}")
+            
+            # Check if task_id is a valid UUID format
+            import uuid
+            try:
+                uuid.UUID(task_id)
+                # Valid UUID, proceed with Supabase update
+                response = supabase_client.table('tasks').update(update_data).eq('id', task_id).execute()
+                print(f"🔍 UPDATE DEBUG: Supabase response: {response}")
+            except ValueError:
+                # Not a valid UUID, task doesn't exist in Supabase
+                print(f"🔍 UPDATE DEBUG: Task {task_id} is not a valid UUID, skipping Supabase update")
+                raise HTTPException(
+                    status_code=status.HTTP_404_NOT_FOUND,
+                    detail="Task not found in database"
+                )
             
             if not response.data:
                 raise HTTPException(
@@ -228,8 +241,21 @@ async def delete_task(task_id: str, current_user: User = Depends(get_current_use
             supabase_client = create_client(SUPABASE_URL, SUPABASE_KEY)
             
             print(f"🔍 DELETE DEBUG: Deleting task {task_id}")
-            response = supabase_client.table('tasks').delete().eq('id', task_id).execute()
-            print(f"🔍 DELETE DEBUG: Supabase response: {response}")
+            
+            # Check if task_id is a valid UUID format
+            import uuid
+            try:
+                uuid.UUID(task_id)
+                # Valid UUID, proceed with Supabase delete
+                response = supabase_client.table('tasks').delete().eq('id', task_id).execute()
+                print(f"🔍 DELETE DEBUG: Supabase response: {response}")
+            except ValueError:
+                # Not a valid UUID, task doesn't exist in Supabase
+                print(f"🔍 DELETE DEBUG: Task {task_id} is not a valid UUID, skipping Supabase delete")
+                raise HTTPException(
+                    status_code=status.HTTP_404_NOT_FOUND,
+                    detail="Task not found in database"
+                )
             
             if not response.data:
                 raise HTTPException(
