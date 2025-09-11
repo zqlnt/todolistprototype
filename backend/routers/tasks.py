@@ -356,6 +356,40 @@ async def toggle_task_star(task_id: str, star_update: dict, current_user: User =
             detail=f"Failed to update task star: {str(e)}"
         )
 
+# SIMPLE TEST: Direct Supabase test endpoint
+@router.post("/test-simple-insert")
+async def test_simple_insert(request: Request):
+    """Simple test endpoint to debug RLS issue"""
+    try:
+        auth_header = request.headers.get("Authorization")
+        if not auth_header or not auth_header.startswith("Bearer "):
+            raise HTTPException(status_code=401, detail="Missing authorization header")
+        
+        access_token = auth_header.split(" ")[1]
+        print(f"🔍 TEST: Using access token: {access_token[:50]}...")
+        
+        # Create simple Supabase client
+        user_supabase = get_supabase_with_auth(access_token)
+        if not user_supabase:
+            raise HTTPException(status_code=500, detail="Failed to create Supabase client")
+        
+        # Try the simplest possible insert
+        simple_data = {
+            'user_id': '62cf9331-75dc-4e7a-9cc2-a28bf33cefd8',
+            'title': 'simple test',
+            'status': 'pending'
+        }
+        
+        print(f"🔍 TEST: Inserting simple data: {simple_data}")
+        response = user_supabase.table('tasks').insert(simple_data).execute()
+        print(f"🔍 TEST: Supabase response: {response}")
+        
+        return {"success": True, "data": response.data}
+        
+    except Exception as e:
+        print(f"🔍 TEST: Error: {e}")
+        raise HTTPException(status_code=500, detail=f"Test failed: {str(e)}")
+
 # PRESENTATION WORKAROUND: Fallback endpoints that always work
 @router.get("/fallback/list", response_model=TaskListResponse)
 async def list_tasks_fallback():
