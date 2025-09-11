@@ -368,10 +368,16 @@ async def test_simple_insert(request: Request):
         access_token = auth_header.split(" ")[1]
         print(f"🔍 TEST: Using access token: {access_token[:50]}...")
         
-        # Create simple Supabase client
-        user_supabase = get_supabase_with_auth(access_token)
-        if not user_supabase:
-            raise HTTPException(status_code=500, detail="Failed to create Supabase client")
+        # Try with service role key instead
+        from database import SUPABASE_URL, SUPABASE_KEY
+        from supabase import create_client
+        
+        print(f"🔍 TEST: Creating client with service role key")
+        service_client = create_client(SUPABASE_URL, SUPABASE_KEY)
+        
+        # Set the user's session
+        service_client.auth.set_session(access_token=access_token, refresh_token="")
+        print(f"🔍 TEST: Set session with access token")
         
         # Try the simplest possible insert
         simple_data = {
@@ -382,10 +388,8 @@ async def test_simple_insert(request: Request):
         
         print(f"🔍 TEST: Inserting simple data: {simple_data}")
         
-        # Try with explicit authorization header
-        response = user_supabase.table('tasks').insert(simple_data).execute({
-            'Authorization': f'Bearer {access_token}'
-        })
+        # Try with service role client
+        response = service_client.table('tasks').insert(simple_data).execute()
         print(f"🔍 TEST: Supabase response: {response}")
         
         return {"success": True, "data": response.data}
