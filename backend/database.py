@@ -138,6 +138,8 @@ def get_supabase_with_auth(access_token: str):
             print("Failed to authenticate user with Supabase")
             return None
         print(f"Successfully authenticated user: {user.user.email}")
+        # IMPORTANT: Set the session again to ensure RLS context is correct
+        client.auth.set_session(access_token=access_token, refresh_token="")
         return client
     except Exception as e:
         print(f"Failed to create authenticated Supabase client: {e}")
