@@ -381,7 +381,11 @@ async def test_simple_insert(request: Request):
         }
         
         print(f"🔍 TEST: Inserting simple data: {simple_data}")
-        response = user_supabase.table('tasks').insert(simple_data).execute()
+        
+        # Try with explicit authorization header
+        response = user_supabase.table('tasks').insert(simple_data).execute({
+            'Authorization': f'Bearer {access_token}'
+        })
         print(f"🔍 TEST: Supabase response: {response}")
         
         return {"success": True, "data": response.data}
