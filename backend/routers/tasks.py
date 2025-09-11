@@ -162,7 +162,9 @@ async def update_task(task_id: str, task_update: TaskUpdate, current_user: User 
             # Create Supabase client with service role key
             supabase_client = create_client(SUPABASE_URL, SUPABASE_KEY)
             
+            print(f"🔍 UPDATE DEBUG: Updating task {task_id} with data: {update_data}")
             response = supabase_client.table('tasks').update(update_data).eq('id', task_id).execute()
+            print(f"🔍 UPDATE DEBUG: Supabase response: {response}")
             
             if not response.data:
                 raise HTTPException(
@@ -225,7 +227,9 @@ async def delete_task(task_id: str, current_user: User = Depends(get_current_use
             # Create Supabase client with service role key
             supabase_client = create_client(SUPABASE_URL, SUPABASE_KEY)
             
+            print(f"🔍 DELETE DEBUG: Deleting task {task_id}")
             response = supabase_client.table('tasks').delete().eq('id', task_id).execute()
+            print(f"🔍 DELETE DEBUG: Supabase response: {response}")
             
             if not response.data:
                 raise HTTPException(
