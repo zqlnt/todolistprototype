@@ -14,6 +14,7 @@ import SentinelAI from './pages/SentinelAI';
 import Connections from './pages/Connections';
 import CompletedTasks from './pages/CompletedTasks';
 import Auth from './pages/Auth';
+import SwipeDemo from './components/SwipeDemo';
 import { useTodoStore } from './store';
 import { apiService } from './services/api';
 
@@ -90,6 +91,8 @@ function App() {
         return <Connections />;
       case 'completedTasks':
         return <CompletedTasks />;
+      case 'swipe-demo':
+        return <SwipeDemo />;
       default:
         return <Dashboard />;
     }

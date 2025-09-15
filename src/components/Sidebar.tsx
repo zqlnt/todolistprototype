@@ -14,7 +14,8 @@ import {
   MessageCircle,
   Bell,
   LogOut,
-  CheckCircle
+  CheckCircle,
+  Smartphone
 } from 'lucide-react';
 import { useTodoStore } from '../store';
 
@@ -227,6 +228,18 @@ const Sidebar: React.FC = () => {
             >
               <Bot size={16} />
               <span>Sentinel AI</span>
+            </button>
+            
+            <button
+              onClick={() => setCurrentPage('swipe-demo')}
+              className={`w-full flex items-center space-x-3 px-3 py-2.5 rounded-lg text-sm transition-colors ${
+                currentPage === 'swipe-demo'
+                  ? 'bg-indigo-100 text-indigo-700 font-medium' 
+                  : 'text-gray-700 hover:bg-gray-200 hover:text-gray-900'
+              }`}
+            >
+              <Smartphone size={16} />
+              <span>Swipe Demo</span>
             </button>
           </div>
         </div>

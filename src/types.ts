@@ -83,7 +83,7 @@ export interface Notification {
 
 export type TaskSection = 'Today' | 'Tomorrow' | 'This Week' | 'Upcoming';
 export type TaskGroupingMode = 'time' | 'category';
-export type AppPage = 'dashboard' | 'todos' | 'emails' | 'calendar' | 'notifications' | 'contacts' | 'chats' | 'ai' | 'connections' | 'completedTasks';
+export type AppPage = 'dashboard' | 'todos' | 'emails' | 'calendar' | 'notifications' | 'contacts' | 'chats' | 'ai' | 'connections' | 'completedTasks' | 'swipe-demo';
 export type CalendarView = 'month' | 'week' | 'day';
 
 export interface DashboardWidget {

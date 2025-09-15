@@ -1,3 +1,43 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+/* Mobile swipe gesture optimizations */
+@layer utilities {
+  .swipe-container {
+    -webkit-overflow-scrolling: touch;
+    overscroll-behavior: contain;
+  }
+  
+  .swipe-row {
+    touch-action: pan-x;
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
+  }
+  
+  .swipe-row:active {
+    cursor: grabbing;
+  }
+  
+  /* Prevent text selection during swipe */
+  .swipe-row * {
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
+  }
+  
+  /* Smooth transitions for mobile */
+  .swipe-action {
+    transition: opacity 0.2s ease-out, transform 0.2s ease-out;
+  }
+  
+  /* Mobile-specific touch targets */
+  @media (max-width: 640px) {
+    .swipe-row {
+      min-height: 48px; /* Minimum touch target size */
+    }
+  }
+}

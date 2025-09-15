@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Check, Edit, Trash2, Star, Plus } from 'lucide-react';
 import { useTodoStore } from '../store';
 import { Task } from '../types';
+import SwipeableRow from './SwipeableRow';
 
 interface TaskItemProps {
   task: Task;
@@ -81,9 +82,16 @@ const TaskItem: React.FC<TaskItemProps> = ({ task, level = 0 }) => {
 
   return (
     <div className="border-b border-neutral-100 last:border-b-0">
-      <div className={`flex items-start space-x-2 py-2 sm:py-4 px-2 sm:px-4 hover:bg-neutral-50 transition-colors group ${
-        isSubtask ? 'ml-6 sm:ml-8 border-l-2 border-neutral-200' : ''
-      }`}>
+      <SwipeableRow
+        onPrioritise={() => toggleTaskStar(task.id)}
+        onDelete={() => deleteTask(task.id)}
+        isPrioritized={task.isStarred}
+        disabled={task.status === 'done'}
+        className={isSubtask ? 'ml-6 sm:ml-8 border-l-2 border-neutral-200' : ''}
+      >
+        <div className={`flex items-start space-x-2 py-2 sm:py-4 px-2 sm:px-4 hover:bg-neutral-50 transition-colors group ${
+          isSubtask ? '' : ''
+        }`}>
         <button
           onClick={() => toggleDone(task.id)}
           className={`${isSubtask ? 'w-3 h-3 sm:w-4 sm:h-4' : 'w-4 h-4 sm:w-5 sm:h-5'} rounded border-2 flex items-center justify-center transition-colors flex-shrink-0 mt-0.5 ${
@@ -191,7 +199,8 @@ const TaskItem: React.FC<TaskItemProps> = ({ task, level = 0 }) => {
             </div>
           )}
         </div>
-      </div>
+        </div>
+      </SwipeableRow>
       
       {/* Add subtask form */}
       {showAddSubtask && task.status === 'pending' && !isSubtask && (
