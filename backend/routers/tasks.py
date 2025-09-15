@@ -72,12 +72,18 @@ async def create_task(request: Request, task: TaskCreate, current_user: User = D
             # Use fallback database
             created_task_data = fallback_db.create_task(task_data)
         else:
-            # Use Supabase with RLS disabled (temporary fix)
+            # Use Supabase with user authentication
             from database import SUPABASE_URL, SUPABASE_KEY
             from supabase import create_client
             
-            # Create Supabase client with service role key
+            # Create Supabase client with anon key for RLS
             supabase_client = create_client(SUPABASE_URL, SUPABASE_KEY)
+            
+            # Set the user's JWT token for RLS
+            auth_header = request.headers.get('authorization')
+            if auth_header and auth_header.startswith('Bearer '):
+                token = auth_header.split(' ')[1]
+                supabase_client.auth.set_session(access_token=token, refresh_token="")
             
             print(f"🔍 DEBUG: Inserting task data: {task_data}")
             try:
