@@ -43,16 +43,18 @@ cd backend && pip install -r requirements.txt && cd ..
 **Frontend (.env)**
 ```env
 VITE_API_BASE_URL=http://localhost:8000/api
-VITE_SUPABASE_URL=your_supabase_url
+VITE_SUPABASE_URL=https://your-project.supabase.co
 VITE_SUPABASE_ANON_KEY=your_supabase_anon_key
 ```
 
 **Backend (.env)**
 ```env
-SUPABASE_URL=your_supabase_url
+SUPABASE_URL=https://your-project.supabase.co
 SUPABASE_ANON_KEY=your_supabase_anon_key
 JWT_SECRET_KEY=your_jwt_secret_key
 ```
+
+**Important**: Create these `.env` files in the root directory and `backend/` directory respectively.
 
 ### 3. Start Development
 ```bash
