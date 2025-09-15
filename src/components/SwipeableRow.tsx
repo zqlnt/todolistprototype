@@ -191,6 +191,7 @@ const SwipeableRow: React.FC<SwipeableRowProps> = ({
         className="relative bg-white dark:bg-gray-800 z-10 swipe-row"
         style={{
           x: xSpring,
+          cursor: disabled ? 'default' : 'grab',
         }}
         drag="x"
         dragConstraints={{ left: 0, right: 0 }}
@@ -202,10 +203,6 @@ const SwipeableRow: React.FC<SwipeableRowProps> = ({
         role="button"
         aria-description="Swipe right to prioritise, left to delete. Use arrow keys for keyboard navigation."
         aria-label="Task row with swipe gestures"
-        style={{
-          x: xSpring,
-          cursor: disabled ? 'default' : 'grab',
-        }}
         whileDrag={{ cursor: 'grabbing' }}
       >
         {children}
