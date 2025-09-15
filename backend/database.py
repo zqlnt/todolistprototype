@@ -1,5 +1,21 @@
 """
 Database configuration and utilities for Sentinel FastAPI backend
+================================================================
+
+This module handles database connections and provides fallback functionality.
+
+REAL FUNCTIONALITY:
+- Supabase PostgreSQL database connection
+- Row Level Security (RLS) support
+- User authentication integration
+
+MOCK FUNCTIONALITY:
+- Fallback in-memory database for development
+- Used when Supabase is not configured
+- Provides basic CRUD operations for testing
+
+Database: Supabase (PostgreSQL)
+Deployment: Render
 """
 import os
 from supabase import create_client, Client
@@ -31,8 +47,10 @@ class FallbackDatabase:
     def __init__(self):
         self.tasks: Dict[str, Dict[str, Any]] = {}
         self.users: Dict[str, Dict[str, Any]] = {}
+        self.categories: Dict[str, Dict[str, Any]] = {}
         self._next_task_id = 1
         self._next_user_id = 1
+        self._next_category_id = 1
     
     def create_user(self, user_data: Dict[str, Any]) -> Dict[str, Any]:
         """Create a new user in fallback database"""
@@ -115,6 +133,58 @@ class FallbackDatabase:
             return False
         
         del self.tasks[task_id]
+        return True
+    
+    def create_category(self, category_data: Dict[str, Any]) -> Dict[str, Any]:
+        """Create a new category"""
+        category_id = str(self._next_category_id)
+        self._next_category_id += 1
+        
+        category = {
+            'id': category_id,
+            'user_id': category_data['user_id'],
+            'name': category_data['name'],
+            'color': category_data.get('color', '#3B82F6'),
+            'created_at': datetime.now().isoformat(),
+            'updated_at': datetime.now().isoformat()
+        }
+        self.categories[category_id] = category
+        return category
+    
+    def get_categories_by_user(self, user_id: str) -> List[Dict[str, Any]]:
+        """Get all categories for a user"""
+        user_categories = [cat for cat in self.categories.values() if cat['user_id'] == user_id]
+        # Sort by name
+        user_categories.sort(key=lambda x: x['name'])
+        return user_categories
+    
+    def update_category(self, category_id: str, user_id: str, update_data: Dict[str, Any]) -> Optional[Dict[str, Any]]:
+        """Update a category"""
+        if category_id not in self.categories:
+            return None
+        
+        category = self.categories[category_id]
+        if category['user_id'] != user_id:
+            return None
+        
+        # Update fields
+        for key, value in update_data.items():
+            if key in category:
+                category[key] = value
+        
+        category['updated_at'] = datetime.now().isoformat()
+        return category
+    
+    def delete_category(self, category_id: str, user_id: str) -> bool:
+        """Delete a category"""
+        if category_id not in self.categories:
+            return False
+        
+        category = self.categories[category_id]
+        if category['user_id'] != user_id:
+            return False
+        
+        del self.categories[category_id]
         return True
 
 # Initialize fallback database

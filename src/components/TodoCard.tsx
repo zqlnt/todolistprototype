@@ -146,7 +146,7 @@ const TodoCard: React.FC = () => {
             >
               <option value="">No category</option>
               {categories.map(category => (
-                <option key={category} value={category}>{category}</option>
+                <option key={category.id} value={category.name}>{category.name}</option>
               ))}
             </select>
           </div>

@@ -1,3 +1,25 @@
+"""
+Sentinel Todo App - FastAPI Backend
+===================================
+
+This is the main FastAPI application for the Sentinel Todo App.
+
+REAL FUNCTIONALITY:
+- Task management with Supabase database
+- User authentication and authorization
+- Category management (user-specific)
+- Email integration and task suggestions
+- Row Level Security (RLS) for data protection
+
+MOCK FUNCTIONALITY:
+- Fallback database for development
+- Test endpoints for demonstration
+- Guest mode support
+
+Deployment: Render (https://render.com)
+Database: Supabase (https://supabase.com)
+"""
+
 from fastapi import FastAPI, HTTPException, Depends, status
 from fastapi.middleware.cors import CORSMiddleware
 from starlette.middleware.sessions import SessionMiddleware
@@ -5,7 +27,7 @@ from contextlib import asynccontextmanager
 import os
 from dotenv import load_dotenv
 
-from routers import tasks, auth, emails, test
+from routers import tasks, auth, emails, test, categories
 from auth_utils import get_current_user_flexible
 from database import is_using_fallback
 
@@ -54,6 +76,7 @@ app.add_middleware(
 app.include_router(auth.router)
 app.include_router(tasks.router)
 app.include_router(emails.router)
+app.include_router(categories.router)
 app.include_router(test.router)
 
 @app.get("/")

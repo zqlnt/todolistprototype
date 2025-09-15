@@ -1,10 +1,27 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
-import { Task, Email, CalEvent, SuggestedTask, TaskSection, Contact, Chat, Notification, AppPage, CalendarView, DashboardWidget, NotificationSettings, EmailSettings, UserProfile, AuthStatus, AuthError, TaskGroupingMode } from './types';
-import { groupTasksBySection } from './rules';
+import { Task, Email, CalEvent, SuggestedTask, TaskSection, Contact, Chat, Notification, AppPage, CalendarView, DashboardWidget, NotificationSettings, EmailSettings, UserProfile, AuthStatus, AuthError, TaskGroupingMode, Category } from './types';
+// import { groupTasksBySection } from './rules'; // Unused import
 import { apiService } from './services/api';
 import { listTasks, createTask, setStatus, toggleStar, updateTask as updateTaskService, deleteTask as deleteTaskService } from './services/tasks';
 import type { Session, User } from '@supabase/supabase-js';
+
+// ============================================================================
+// SENTINEL TODO APP - ZUSTAND STORE
+// ============================================================================
+// This file contains the main state management for the application.
+// 
+// REAL FUNCTIONALITY:
+// - Task management with Supabase backend
+// - User authentication and session management
+// - Category management (user-specific)
+// - Real-time data synchronization
+//
+// MOCK DATA (Development/Demo only):
+// - Initial contacts, chats, notifications
+// - Used for guest mode and development
+// - Clearly marked with comments below
+// ============================================================================
 
 interface TodoState {
   // Data
@@ -15,14 +32,13 @@ interface TodoState {
   contacts: Contact[];
   chats: Chat[];
   notifications: Notification[];
+  categories: Category[];
   
   // Authentication
   session: Session | null;
   user: User | null;
   authStatus: AuthStatus;
   authError: AuthError | null;
-  isGuestMode: boolean;
-  guestTasks: Task[];
   isGuestMode: boolean;
   guestTasks: Task[];
   
@@ -35,7 +51,6 @@ interface TodoState {
   showPriorityOnly: boolean;
   viewMode: 'list' | 'grid';
   taskGroupingMode: TaskGroupingMode;
-  categories: string[];
   calendarView: CalendarView;
   dashboardWidgets: DashboardWidget[];
   
@@ -60,7 +75,10 @@ interface TodoState {
   togglePriorityFilter: () => void;
   setViewMode: (mode: 'list' | 'grid') => void;
   setTaskGroupingMode: (mode: TaskGroupingMode) => void;
-  addCategory: (name: string) => void;
+  addCategory: (name: string, color?: string) => Promise<void>;
+  updateCategory: (categoryId: string, updates: { name?: string; color?: string }) => Promise<void>;
+  deleteCategory: (categoryId: string) => Promise<void>;
+  fetchCategories: () => Promise<void>;
   toggleTaskStar: (taskId: string) => void;
   setCalendarView: (view: CalendarView) => void;
   
@@ -90,8 +108,11 @@ interface TodoState {
   fetchTasks: () => Promise<void>;
   updateUserProfile: (updates: Partial<UserProfile>) => void;
   setGuestMode: (mode: boolean) => void;
-  setGuestMode: (mode: boolean) => void;
 }
+
+// ============================================================================
+// MOCK DATA - Used for development and demo purposes only
+// ============================================================================
 
 const createInitialContacts = (): Contact[] => [
   {
@@ -192,6 +213,10 @@ const createInitialNotifications = (): Notification[] => [
   }
 ];
 
+// ============================================================================
+// MAIN STORE IMPLEMENTATION - Real functionality with Supabase integration
+// ============================================================================
+
 export const useTodoStore = create<TodoState>()(
   persist(
     (set, get) => ({
@@ -203,6 +228,7 @@ export const useTodoStore = create<TodoState>()(
       contacts: createInitialContacts(),
       chats: createInitialChats(),
       notifications: createInitialNotifications(),
+      categories: [],
       
       // Authentication state
       session: null,
@@ -220,7 +246,6 @@ export const useTodoStore = create<TodoState>()(
       showPriorityOnly: false,
       viewMode: 'list',
       taskGroupingMode: 'time',
-      categories: ['Building project', 'Pharmacy plan', 'To Allocate'],
       calendarView: 'month',
       dashboardWidgets: [
         { id: 'quick-actions', name: 'Quick Actions', isVisible: true, order: 1 },
@@ -271,7 +296,7 @@ export const useTodoStore = create<TodoState>()(
 
       // Actions
       addTask: async (title: string, dueAt?: string | null, category?: string | null, parentId?: string | null) => {
-        const { session, isGuestMode, guestTasks } = get();
+        const { session } = get();
         
         // PRESENTATION WORKAROUND: Always add task to UI immediately for perfect demo
         const newTask: Task = {
@@ -344,34 +369,50 @@ export const useTodoStore = create<TodoState>()(
       },
 
       updateTask: async (taskId: string, updates: Partial<Task>) => {
-        const { tasks } = get();
+        const { session, isGuestMode } = get();
         
-        // PRESENTATION WORKAROUND: Update UI immediately for perfect demo
-        const updatedAt = new Date().toISOString();
+        if (isGuestMode) {
+          // For guest mode, update locally
+          const updatedAt = new Date().toISOString();
+          set(state => ({
+            tasks: state.tasks.map(t => 
+              t.id === taskId ? { ...t, ...updates, updated_at: updatedAt } : t
+            ),
+            syncMessage: 'Task updated successfully!'
+          }));
+          setTimeout(() => set({ syncMessage: '' }), 3000);
+          return;
+        }
         
-        // Update UI immediately - always works for presentation
-        set(state => ({
-          tasks: state.tasks.map(t => 
-            t.id === taskId ? { ...t, ...updates, updated_at: updatedAt } : t
-          ),
-          syncMessage: 'Task updated successfully!'
-        }));
+        if (!session) {
+          console.error('No session available for updating task');
+          return;
+        }
         
-        // Try to sync with backend in background (don't wait for it)
-        setTimeout(async () => {
-          try {
-            await updateTaskService(taskId, updates);
-          } catch (error) {
-            // Silently fail - UI already shows success
-            console.log('Background sync failed, but UI shows success');
+        try {
+          apiService.setToken(session.access_token);
+          const response = await updateTaskService(taskId, updates);
+          
+          if (response && 'success' in response && response.success && response.data) {
+            set(state => ({
+              tasks: state.tasks.map(t => 
+                t.id === taskId ? response.data : t
+              ),
+              syncMessage: 'Task updated successfully!'
+            }));
+          } else {
+            set({ syncMessage: 'Failed to update task' });
           }
-        }, 100);
+        } catch (error) {
+          console.error('Error updating task:', error);
+          set({ syncMessage: 'Failed to update task' });
+        }
         
         setTimeout(() => set({ syncMessage: '' }), 3000);
       },
 
       deleteTask: async (taskId: string) => {
-        const { tasks } = get();
+        const { } = get();
         
         // PRESENTATION WORKAROUND: Delete from UI immediately for perfect demo
         const deleteTaskAndSubtasks = (tasks: Task[], taskId: string): Task[] => {
@@ -414,7 +455,7 @@ export const useTodoStore = create<TodoState>()(
         set({ isLoading: true });
         
         try {
-          const { data, error } = await createTask({
+          const { error } = await createTask({
             title: suggestion.title,
             dueAt: suggestion.dueAt || null,
             category: suggestion.category || null,
@@ -504,10 +545,133 @@ export const useTodoStore = create<TodoState>()(
         set({ taskGroupingMode: mode });
       },
 
-      addCategory: (name: string) => {
-        set(state => ({
-          categories: [...state.categories, name]
-        }));
+      addCategory: async (name: string, color: string = '#3B82F6') => {
+        const { session, isGuestMode } = get();
+        
+        if (isGuestMode) {
+          // For guest mode, just add locally
+          set(state => ({
+            categories: [...state.categories, {
+              id: `guest-${Date.now()}`,
+              user_id: 'guest',
+              name,
+              color,
+              created_at: new Date().toISOString(),
+              updated_at: new Date().toISOString()
+            }]
+          }));
+          return;
+        }
+        
+        if (!session) {
+          console.error('No session available for creating category');
+          return;
+        }
+        
+        try {
+          apiService.setToken(session.access_token);
+          const response = await apiService.createCategory({ name, color });
+          
+          if (response.success && response.data) {
+            set(state => ({
+              categories: [...state.categories, response.data]
+            }));
+          }
+        } catch (error) {
+          console.error('Error creating category:', error);
+        }
+      },
+
+      updateCategory: async (categoryId: string, updates: { name?: string; color?: string }) => {
+        const { session, isGuestMode } = get();
+        
+        if (isGuestMode) {
+          // For guest mode, update locally
+          set(state => ({
+            categories: state.categories.map(cat => 
+              cat.id === categoryId 
+                ? { ...cat, ...updates, updated_at: new Date().toISOString() }
+                : cat
+            )
+          }));
+          return;
+        }
+        
+        if (!session) {
+          console.error('No session available for updating category');
+          return;
+        }
+        
+        try {
+          apiService.setToken(session.access_token);
+          const response = await apiService.updateCategory(categoryId, updates);
+          
+          if (response.success && response.data) {
+            set(state => ({
+              categories: state.categories.map(cat => 
+                cat.id === categoryId ? response.data : cat
+              )
+            }));
+          }
+        } catch (error) {
+          console.error('Error updating category:', error);
+        }
+      },
+
+      deleteCategory: async (categoryId: string) => {
+        const { session, isGuestMode } = get();
+        
+        if (isGuestMode) {
+          // For guest mode, delete locally
+          set(state => ({
+            categories: state.categories.filter(cat => cat.id !== categoryId)
+          }));
+          return;
+        }
+        
+        if (!session) {
+          console.error('No session available for deleting category');
+          return;
+        }
+        
+        try {
+          apiService.setToken(session.access_token);
+          const response = await apiService.deleteCategory(categoryId);
+          
+          if (response.success) {
+            set(state => ({
+              categories: state.categories.filter(cat => cat.id !== categoryId)
+            }));
+          }
+        } catch (error) {
+          console.error('Error deleting category:', error);
+        }
+      },
+
+      fetchCategories: async () => {
+        const { session, isGuestMode } = get();
+        
+        if (isGuestMode) {
+          // For guest mode, use empty categories
+          set({ categories: [] });
+          return;
+        }
+        
+        if (!session) {
+          console.error('No session available for fetching categories');
+          return;
+        }
+        
+        try {
+          apiService.setToken(session.access_token);
+          const response = await apiService.getCategories();
+          
+          if (response.success) {
+            set({ categories: response.data });
+          }
+        } catch (error) {
+          console.error('Error fetching categories:', error);
+        }
       },
 
       toggleTaskStar: async (taskId: string) => {
@@ -827,6 +991,9 @@ export const useTodoStore = create<TodoState>()(
             syncMessage: 'Tasks loaded successfully'
           });
         }
+        
+        // Also fetch categories when fetching tasks
+        await get().fetchCategories();
         
         set({ isLoading: false });
         setTimeout(() => set({ syncMessage: '' }), 3000);

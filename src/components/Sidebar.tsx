@@ -26,6 +26,8 @@ const Sidebar: React.FC = () => {
     sectionFilter,
     categories,
     addCategory,
+    updateCategory,
+    deleteCategory,
     tasks,
     signOut,
     userProfile,
@@ -33,7 +35,7 @@ const Sidebar: React.FC = () => {
     setGuestMode
   } = useTodoStore();
   
-  const [expandedCategories, setExpandedCategories] = useState<string[]>(['Building project', 'Pharmacy plan']);
+  const [expandedCategories, setExpandedCategories] = useState<string[]>([]);
   const [isToDoExpanded, setIsToDoExpanded] = useState(true);
   const [newCategoryName, setNewCategoryName] = useState('');
   const [showAddCategory, setShowAddCategory] = useState(false);
@@ -49,12 +51,18 @@ const Sidebar: React.FC = () => {
   const toggleToDoSection = () => {
     setIsToDoExpanded(!isToDoExpanded);
   };
-  const handleAddCategory = (e: React.FormEvent) => {
+  const handleAddCategory = async (e: React.FormEvent) => {
     e.preventDefault();
     if (newCategoryName.trim()) {
-      addCategory(newCategoryName.trim());
+      await addCategory(newCategoryName.trim());
       setNewCategoryName('');
       setShowAddCategory(false);
+    }
+  };
+
+  const handleDeleteCategory = async (categoryId: string, categoryName: string) => {
+    if (window.confirm(`Are you sure you want to delete the category "${categoryName}"?`)) {
+      await deleteCategory(categoryId);
     }
   };
 
@@ -280,24 +288,36 @@ const Sidebar: React.FC = () => {
           
           <div className="space-y-1">
             {categories.map(category => {
-              const isExpanded = expandedCategories.includes(category);
-              const subtasks = getSubtasks(category);
+              const isExpanded = expandedCategories.includes(category.name);
+              const subtasks = getSubtasks(category.name);
               
               return (
-                <div key={category}>
-                  <button
-                    onClick={() => toggleCategory(category)}
-                    className="w-full flex items-center justify-between px-3 py-2 rounded-lg text-sm text-gray-700 hover:bg-gray-200 hover:text-gray-900 transition-colors"
-                  >
-                    <div className="flex items-center space-x-2">
-                      {isExpanded ? <ChevronDown size={14} /> : <ChevronRight size={14} />}
-                      <Folder size={14} />
-                      <span>{category}</span>
-                    </div>
-                    <span className="text-xs bg-gray-200 text-gray-600 px-2 py-0.5 rounded-full">
-                      {subtasks.length}
-                    </span>
-                  </button>
+                <div key={category.id}>
+                  <div className="flex items-center group">
+                    <button
+                      onClick={() => toggleCategory(category.name)}
+                      className="flex-1 flex items-center justify-between px-3 py-2 rounded-lg text-sm text-gray-700 hover:bg-gray-200 hover:text-gray-900 transition-colors"
+                    >
+                      <div className="flex items-center space-x-2">
+                        {isExpanded ? <ChevronDown size={14} /> : <ChevronRight size={14} />}
+                        <div 
+                          className="w-3 h-3 rounded-full" 
+                          style={{ backgroundColor: category.color }}
+                        />
+                        <span>{category.name}</span>
+                      </div>
+                      <span className="text-xs bg-gray-200 text-gray-600 px-2 py-0.5 rounded-full">
+                        {subtasks.length}
+                      </span>
+                    </button>
+                    <button
+                      onClick={() => handleDeleteCategory(category.id, category.name)}
+                      className="opacity-0 group-hover:opacity-100 p-1 text-gray-400 hover:text-red-500 transition-all"
+                      title="Delete category"
+                    >
+                      ×
+                    </button>
+                  </div>
                   
                   {isExpanded && subtasks.length > 0 && (
                     <div className="ml-8 mt-1 space-y-1">

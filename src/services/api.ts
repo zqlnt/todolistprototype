@@ -218,6 +218,53 @@ class ApiService {
   async getEmailSuggestions() {
     return this.request<any[]>('/api/emails/suggestions');
   }
+
+  // Category endpoints
+  async getCategories() {
+    return this.request<{
+      success: boolean;
+      data: any[];
+      message?: string;
+    }>('/api/categories/');
+  }
+
+  async createCategory(category: {
+    name: string;
+    color?: string;
+  }) {
+    return this.request<{
+      success: boolean;
+      data: any;
+      message?: string;
+    }>('/api/categories/', {
+      method: 'POST',
+      body: JSON.stringify(category),
+    });
+  }
+
+  async updateCategory(categoryId: string, updates: {
+    name?: string;
+    color?: string;
+  }) {
+    return this.request<{
+      success: boolean;
+      data: any;
+      message?: string;
+    }>(`/api/categories/${categoryId}`, {
+      method: 'PUT',
+      body: JSON.stringify(updates),
+    });
+  }
+
+  async deleteCategory(categoryId: string) {
+    return this.request<{
+      success: boolean;
+      data: any;
+      message?: string;
+    }>(`/api/categories/${categoryId}`, {
+      method: 'DELETE',
+    });
+  }
 }
 
 export const apiService = new ApiService();

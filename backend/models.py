@@ -102,6 +102,27 @@ class SuggestedTask(BaseModel):
     linked_email_id: Optional[str] = Field(None, alias="linkedEmailId")
     email_subject: Optional[str] = Field(None, alias="emailSubject")
 
+# Category models
+class CategoryBase(BaseModel):
+    name: str
+    color: str = '#3B82F6'
+
+class CategoryCreate(CategoryBase):
+    pass
+
+class CategoryUpdate(BaseModel):
+    name: Optional[str] = None
+    color: Optional[str] = None
+
+class Category(CategoryBase):
+    id: str
+    user_id: str
+    created_at: datetime
+    updated_at: datetime
+    
+    class Config:
+        allow_population_by_field_name = True
+
 # Response models
 class TaskResponse(BaseModel):
     success: bool
@@ -117,4 +138,14 @@ class EmailSyncResponse(BaseModel):
     success: bool
     emails: list[Email] = []
     suggestions: list[SuggestedTask] = []
+    message: Optional[str] = None
+
+class CategoryResponse(BaseModel):
+    success: bool
+    data: Optional[Category] = None
+    message: Optional[str] = None
+
+class CategoryListResponse(BaseModel):
+    success: bool
+    data: list[Category] = []
     message: Optional[str] = None
