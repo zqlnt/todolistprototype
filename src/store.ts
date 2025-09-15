@@ -54,6 +54,13 @@ interface TodoState {
   calendarView: CalendarView;
   dashboardWidgets: DashboardWidget[];
   
+  // Search and Filter State
+  searchQuery: string;
+  selectedCategories: string[];
+  sortBy: 'title' | 'dueAt' | 'created_at' | 'priority';
+  sortOrder: 'asc' | 'desc';
+  selectedTasks: string[];
+  
   // Settings
   notificationSettings: NotificationSettings;
   emailSettings: EmailSettings;
@@ -73,6 +80,17 @@ interface TodoState {
   // UI Actions
   toggleSidebar: () => void;
   togglePriorityFilter: () => void;
+  
+  // Search and Filter Actions
+  setSearchQuery: (query: string) => void;
+  setSelectedCategories: (categories: string[]) => void;
+  toggleCategoryFilter: (categoryId: string) => void;
+  setSortBy: (sortBy: 'title' | 'dueAt' | 'created_at' | 'priority') => void;
+  setSortOrder: (order: 'asc' | 'desc') => void;
+  toggleTaskSelection: (taskId: string) => void;
+  selectAllTasks: () => void;
+  clearTaskSelection: () => void;
+  getFilteredTasks: () => Task[];
   setViewMode: (mode: 'list' | 'grid') => void;
   setTaskGroupingMode: (mode: TaskGroupingMode) => void;
   addCategory: (name: string, color?: string) => Promise<void>;
@@ -247,6 +265,13 @@ export const useTodoStore = create<TodoState>()(
       viewMode: 'list',
       taskGroupingMode: 'time',
       calendarView: 'month',
+      
+      // Search and Filter State
+      searchQuery: '',
+      selectedCategories: [],
+      sortBy: 'created_at',
+      sortOrder: 'desc',
+      selectedTasks: [],
       dashboardWidgets: [
         { id: 'quick-actions', name: 'Quick Actions', isVisible: true, order: 1 },
         { id: 'today-overview', name: 'Today Overview', isVisible: true, order: 2 },

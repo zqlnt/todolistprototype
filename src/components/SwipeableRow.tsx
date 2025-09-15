@@ -23,7 +23,7 @@ const SwipeableRow: React.FC<SwipeableRowProps> = ({
   const [showUndo, setShowUndo] = useState(false);
   const [pendingAction, setPendingAction] = useState<'prioritize' | 'delete' | null>(null);
   const x = useMotionValue(0);
-  const xSpring = useSpring(x, { stiffness: 300, damping: 30 });
+  const xSpring = useSpring(x, { stiffness: 400, damping: 40 });
   const rowRef = useRef<HTMLDivElement>(null);
 
   // Thresholds
@@ -53,10 +53,23 @@ const SwipeableRow: React.FC<SwipeableRowProps> = ({
     if (disabled) return;
     
     const currentX = info.offset.x;
-    const velocity = Math.abs(info.velocity.x);
     
-    // Cap the drag distance
-    const cappedX = Math.max(-MAX_DRAG, Math.min(MAX_DRAG, currentX));
+    // Apply resistance at the edges
+    let cappedX = currentX;
+    if (currentX > 0) {
+      // Swiping right - apply resistance after threshold
+      if (currentX > COMMIT_THRESHOLD) {
+        cappedX = COMMIT_THRESHOLD + (currentX - COMMIT_THRESHOLD) * 0.3;
+      }
+    } else {
+      // Swiping left - apply resistance after threshold
+      if (currentX < -COMMIT_THRESHOLD) {
+        cappedX = -COMMIT_THRESHOLD + (currentX + COMMIT_THRESHOLD) * 0.3;
+      }
+    }
+    
+    // Final cap
+    cappedX = Math.max(-MAX_DRAG, Math.min(MAX_DRAG, cappedX));
     x.set(cappedX);
   };
 
@@ -76,26 +89,20 @@ const SwipeableRow: React.FC<SwipeableRowProps> = ({
       if (isRightSwipe) {
         setPendingAction('prioritize');
         onPrioritise();
-        // Animate row out to the right
-        x.set(300);
-        setTimeout(() => {
-          x.set(0);
-          setPendingAction(null);
-        }, 300);
+        // Quick snap back with success feedback
+        x.set(0);
+        setPendingAction(null);
       } else if (isLeftSwipe) {
         setPendingAction('delete');
         onDelete();
         // Show undo option
         setShowUndo(true);
-        // Animate row out to the left
-        x.set(-300);
-        setTimeout(() => {
-          x.set(0);
-          setPendingAction(null);
-        }, 300);
+        // Quick snap back
+        x.set(0);
+        setPendingAction(null);
       }
     } else {
-      // Snap back
+      // Snap back smoothly
       x.set(0);
     }
   };
@@ -144,7 +151,7 @@ const SwipeableRow: React.FC<SwipeableRowProps> = ({
       <div className="absolute inset-0 flex">
         {/* Left Action - Prioritize */}
         <motion.div
-          className="flex-1 bg-amber-100 dark:bg-amber-900/20 flex items-center justify-center"
+          className="flex-1 bg-amber-50 dark:bg-amber-900/10 flex items-center justify-center"
           style={{
             opacity: leftActionOpacity,
           }}
@@ -165,7 +172,7 @@ const SwipeableRow: React.FC<SwipeableRowProps> = ({
 
         {/* Right Action - Delete */}
         <motion.div
-          className="flex-1 bg-red-100 dark:bg-red-900/20 flex items-center justify-center"
+          className="flex-1 bg-red-50 dark:bg-red-900/10 flex items-center justify-center"
           style={{
             opacity: rightActionOpacity,
           }}
@@ -188,14 +195,14 @@ const SwipeableRow: React.FC<SwipeableRowProps> = ({
       {/* Main Row Content */}
       <motion.div
         ref={rowRef}
-        className="relative bg-white dark:bg-gray-800 z-10 swipe-row"
+        className="relative bg-white dark:bg-gray-900 z-10 swipe-row border-b border-gray-100 dark:border-gray-700"
         style={{
           x: xSpring,
           cursor: disabled ? 'default' : 'grab',
         }}
         drag="x"
-        dragConstraints={{ left: 0, right: 0 }}
-        dragElastic={0.1}
+        dragConstraints={{ left: -MAX_DRAG, right: MAX_DRAG }}
+        dragElastic={0.05}
         onDragStart={handleDragStart}
         onDrag={handleDrag}
         onDragEnd={handleDragEnd}
