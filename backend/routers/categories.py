@@ -7,7 +7,7 @@ from auth_utils import get_current_user_flexible
 from database import supabase_client, fallback_db, is_using_fallback
 import uuid
 
-router = APIRouter(prefix="/categories", tags=["categories"])
+router = APIRouter(prefix="/api/categories", tags=["categories"])
 
 @router.get("/", response_model=CategoryListResponse)
 async def list_categories(request: Request, current_user: User = Depends(get_current_user_flexible)):
