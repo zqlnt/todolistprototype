@@ -202,7 +202,7 @@ const SwipeableRow: React.FC<SwipeableRowProps> = ({
       {/* Main Row Content */}
       <motion.div
         ref={rowRef}
-        className="relative bg-white dark:bg-gray-900 z-20 swipe-row border-b border-gray-100 dark:border-gray-700 shadow-sm"
+        className="relative bg-white z-20 swipe-row border-b border-gray-100 shadow-sm"
         style={{
           x: xSpring,
           cursor: disabled ? 'default' : 'grab',

@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Check, Star, Clock, Folder, FolderOpen, Trash2, Move } from 'lucide-react';
+import { Check, Star, Folder, FolderOpen } from 'lucide-react';
 import { useTodoStore } from '../store';
 import { Task } from '../types';
 import SwipeableRow from './SwipeableRow';
@@ -48,7 +48,6 @@ const MobileTaskItem: React.FC<MobileTaskItemProps> = ({ task, onPress }) => {
   };
 
   const handleMove = () => {
-    // Move to "To Allocate" folder
     moveTaskToCategory(task.id, 'To Allocate');
   };
 
@@ -65,7 +64,6 @@ const MobileTaskItem: React.FC<MobileTaskItemProps> = ({ task, onPress }) => {
         onClick={() => onPress(task)}
       >
         <div className="flex items-center space-x-3">
-          {/* Left side - Checkbox or Folder icon */}
           {isFolder ? (
             <button
               onClick={(e) => {
@@ -92,7 +90,6 @@ const MobileTaskItem: React.FC<MobileTaskItemProps> = ({ task, onPress }) => {
             </button>
           )}
 
-          {/* Center - Task content */}
           <div className="flex-1 min-w-0">
             <div className="flex items-center space-x-2">
               <span className={`text-sm font-medium ${
@@ -111,7 +108,6 @@ const MobileTaskItem: React.FC<MobileTaskItemProps> = ({ task, onPress }) => {
             )}
           </div>
 
-          {/* Right side - Time and priority */}
           <div className="flex items-center space-x-2">
             {task.dueAt && (
               <span className="text-xs text-gray-500">
