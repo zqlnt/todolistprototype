@@ -259,11 +259,9 @@ const TodoCard: React.FC = () => {
               </h3>
               
               <div className="space-y-0.5 sm:space-y-0">
-                <DraggableTaskList
-                  tasks={sectionTasks}
-                  onReorder={reorderTasks}
-                  onMoveToCategory={moveTaskToCategory}
-                />
+                {sectionTasks.map(task => (
+                  <TaskItem key={task.id} task={task} />
+                ))}
                 
                 {/* Email suggestions */}
                 {suggestedTasks.length > 0 && (
