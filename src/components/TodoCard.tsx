@@ -81,14 +81,21 @@ const TodoCard: React.FC = () => {
   console.log('TodoCard - tasks:', tasks);
   console.log('TodoCard - filteredTasks:', filteredTasks);
   console.log('TodoCard - sectionFilter:', sectionFilter);
+  console.log('TodoCard - completed tasks:', tasks.filter(t => t.status === 'done'));
   
   // Group tasks for display
-  const groupedTasks = groupTasksBySection(filteredTasks);
-  const completedTasks = tasks.filter(task => task.status === 'done' && !task.parent_id);
+  const pendingTasks = filteredTasks.filter(task => task.status === 'pending');
+  const groupedTasks = groupTasksBySection(pendingTasks);
+  const completedTasks = filteredTasks.filter(task => task.status === 'done' && !task.parent_id);
 
   const getDisplayTasks = () => {
     if (sectionFilter === 'All') {
-      return groupedTasks;
+      // Include both pending and completed tasks
+      const allTasks = { ...groupedTasks };
+      if (completedTasks.length > 0) {
+        allTasks['Completed'] = completedTasks;
+      }
+      return allTasks;
     } else if (sectionFilter === 'Completed') {
       return { Completed: completedTasks };
     } else if (taskGroupingMode === 'category') {

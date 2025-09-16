@@ -1289,7 +1289,7 @@ export const useTodoStore = create<TodoState>()(
         if (sectionFilter !== 'All' && sectionFilter !== 'Completed') {
           const now = new Date();
           filteredTasks = filteredTasks.filter(task => {
-            if (task.status === 'done') return false;
+            if (task.status === 'done') return false; // Hide completed tasks from main sections
             if (!task.dueAt) return sectionFilter === 'Upcoming';
             
             const due = new Date(task.dueAt);
@@ -1310,6 +1310,11 @@ export const useTodoStore = create<TodoState>()(
           });
         } else if (sectionFilter === 'Completed') {
           filteredTasks = filteredTasks.filter(task => task.status === 'done');
+        }
+        
+        // Always include completed tasks in the "All" view
+        if (sectionFilter === 'All') {
+          // Don't filter out completed tasks - they'll be shown in their own section
         }
 
         // Filter by search query
