@@ -76,6 +76,11 @@ const TodoCard: React.FC = () => {
   // Get filtered tasks from store
   const filteredTasks = getFilteredTasks();
   
+  // Debug logging
+  console.log('TodoCard - tasks:', tasks);
+  console.log('TodoCard - filteredTasks:', filteredTasks);
+  console.log('TodoCard - sectionFilter:', sectionFilter);
+  
   // Group tasks for display
   const groupedTasks = groupTasksBySection(filteredTasks);
   const completedTasks = tasks.filter(task => task.status === 'done' && !task.parent_id);
@@ -250,7 +255,16 @@ const TodoCard: React.FC = () => {
             );
           }
           
-          if (sectionTasks.length === 0 && (!suggestedTasks || suggestedTasks.length === 0)) return null;
+          if (sectionTasks.length === 0 && (!suggestedTasks || suggestedTasks.length === 0)) {
+            return (
+              <div key={section} className="p-1.5 sm:p-3 lg:p-6">
+                <h3 className="text-xs sm:text-base font-semibold text-neutral-700 mb-2 sm:mb-4 uppercase tracking-wider">
+                  {section}
+                </h3>
+                <div className="text-sm text-gray-500 italic">No tasks in this section</div>
+              </div>
+            );
+          }
           
           return (
             <div key={section} className="p-1.5 sm:p-3 lg:p-6">
@@ -276,6 +290,17 @@ const TodoCard: React.FC = () => {
             </div>
           );
         })}
+        
+        {/* Fallback when no tasks exist */}
+        {Object.keys(displayTasks).length === 0 && (
+          <div className="p-6 text-center">
+            <div className="text-gray-500 mb-4">
+              <Calendar size={48} className="mx-auto mb-4 text-gray-300" />
+              <h3 className="text-lg font-medium text-gray-900 mb-2">No tasks yet</h3>
+              <p className="text-sm text-gray-500">Create your first task using the form above</p>
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );
