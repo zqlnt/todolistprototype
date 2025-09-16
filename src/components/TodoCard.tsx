@@ -30,6 +30,7 @@ const TodoCard: React.FC = () => {
     dismissSuggestion, 
     isLoading,
     showPriorityOnly,
+    togglePriorityFilter,
     toggleTaskStar,
     sectionFilter,
     taskGroupingMode,
