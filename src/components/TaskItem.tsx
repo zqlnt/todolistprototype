@@ -1,8 +1,9 @@
 import React, { useState } from 'react';
-import { Check, Edit, Trash2, Star, Plus } from 'lucide-react';
+import { Check, Edit, Trash2, Star, Plus, Move } from 'lucide-react';
 import { useTodoStore } from '../store';
 import { Task } from '../types';
 import SwipeableRow from './SwipeableRow';
+import MoveTaskModal from './MoveTaskModal';
 
 interface TaskItemProps {
   task: Task;
@@ -23,6 +24,7 @@ const TaskItem: React.FC<TaskItemProps> = ({ task, level = 0 }) => {
   const [subtaskTitle, setSubtaskTitle] = useState('');
   const [editingTask, setEditingTask] = useState<string | null>(null);
   const [editTitle, setEditTitle] = useState('');
+  const [showMoveModal, setShowMoveModal] = useState(false);
 
   const formatDueTime = (dueAt: string) => {
     const due = new Date(dueAt);
@@ -85,6 +87,7 @@ const TaskItem: React.FC<TaskItemProps> = ({ task, level = 0 }) => {
       <SwipeableRow
         onPrioritise={() => toggleTaskStar(task.id)}
         onDelete={() => deleteTask(task.id)}
+        onMove={() => setShowMoveModal(true)}
         isPrioritized={task.isStarred}
         disabled={task.status === 'done'}
         className={isSubtask ? 'ml-6 sm:ml-8 border-l-2 border-neutral-200' : ''}
@@ -181,6 +184,14 @@ const TaskItem: React.FC<TaskItemProps> = ({ task, level = 0 }) => {
                     </button>
                     
                     <button
+                      onClick={() => setShowMoveModal(true)}
+                      className="p-1 text-neutral-400 hover:text-blue-600 transition-colors"
+                      title="Move task"
+                    >
+                      <Move size={12} />
+                    </button>
+                    
+                    <button
                       onClick={() => startEditing(task.id, task.title)}
                       className="p-1 text-neutral-400 hover:text-neutral-600 transition-colors"
                     >
@@ -240,6 +251,14 @@ const TaskItem: React.FC<TaskItemProps> = ({ task, level = 0 }) => {
           ))}
         </div>
       )}
+
+      {/* Move Task Modal */}
+      <MoveTaskModal
+        isOpen={showMoveModal}
+        onClose={() => setShowMoveModal(false)}
+        taskId={task.id}
+        currentCategory={task.category || undefined}
+      />
     </div>
   );
 };

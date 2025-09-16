@@ -6,6 +6,7 @@ interface SwipeableRowProps {
   children: React.ReactNode;
   onPrioritise: () => void;
   onDelete: () => void;
+  onMove?: () => void;
   isPrioritized?: boolean;
   disabled?: boolean;
   className?: string;
@@ -15,6 +16,7 @@ const SwipeableRow: React.FC<SwipeableRowProps> = ({
   children,
   onPrioritise,
   onDelete,
+  onMove,
   isPrioritized = false,
   disabled = false,
   className = '',
@@ -127,6 +129,11 @@ const SwipeableRow: React.FC<SwipeableRowProps> = ({
           event.preventDefault();
           onDelete();
           break;
+        case 'm':
+        case 'M':
+          event.preventDefault();
+          onMove?.();
+          break;
         case 'Enter':
           event.preventDefault();
           // Toggle priority on Enter
@@ -195,7 +202,7 @@ const SwipeableRow: React.FC<SwipeableRowProps> = ({
       {/* Main Row Content */}
       <motion.div
         ref={rowRef}
-        className="relative bg-white dark:bg-gray-900 z-10 swipe-row border-b border-gray-100 dark:border-gray-700"
+        className="relative bg-white dark:bg-gray-900 z-20 swipe-row border-b border-gray-100 dark:border-gray-700 shadow-sm"
         style={{
           x: xSpring,
           cursor: disabled ? 'default' : 'grab',

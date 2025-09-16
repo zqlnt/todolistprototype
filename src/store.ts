@@ -1043,6 +1043,130 @@ export const useTodoStore = create<TodoState>()(
           set({ tasks: [...guestTasks] });
         }
       },
+
+      // Search and Filter Actions
+      setSearchQuery: (query: string) => {
+        set({ searchQuery: query });
+      },
+
+      setSelectedCategories: (categories: string[]) => {
+        set({ selectedCategories: categories });
+      },
+
+      toggleCategoryFilter: (categoryId: string) => {
+        set(state => ({
+          selectedCategories: state.selectedCategories.includes(categoryId)
+            ? state.selectedCategories.filter(id => id !== categoryId)
+            : [...state.selectedCategories, categoryId]
+        }));
+      },
+
+      setSortBy: (sortBy: 'title' | 'dueAt' | 'created_at' | 'priority') => {
+        set({ sortBy });
+      },
+
+      setSortOrder: (order: 'asc' | 'desc') => {
+        set({ sortOrder: order });
+      },
+
+      toggleTaskSelection: (taskId: string) => {
+        set(state => ({
+          selectedTasks: state.selectedTasks.includes(taskId)
+            ? state.selectedTasks.filter(id => id !== taskId)
+            : [...state.selectedTasks, taskId]
+        }));
+      },
+
+      selectAllTasks: () => {
+        const { tasks } = get();
+        set({ selectedTasks: tasks.map(task => task.id) });
+      },
+
+      clearTaskSelection: () => {
+        set({ selectedTasks: [] });
+      },
+
+      getFilteredTasks: () => {
+        const { tasks, searchQuery, selectedCategories, sortBy, sortOrder, sectionFilter } = get();
+        
+        let filteredTasks = [...tasks];
+
+        // Filter by section (Today, Tomorrow, etc.)
+        if (sectionFilter !== 'All' && sectionFilter !== 'Completed') {
+          const now = new Date();
+          filteredTasks = filteredTasks.filter(task => {
+            if (task.status === 'done') return false;
+            if (!task.dueAt) return sectionFilter === 'Upcoming';
+            
+            const due = new Date(task.dueAt);
+            const diffDays = (due.getTime() - now.getTime()) / (1000 * 60 * 60 * 24);
+            
+            switch (sectionFilter) {
+              case 'Today':
+                return diffDays <= 1;
+              case 'Tomorrow':
+                return diffDays > 1 && diffDays <= 2;
+              case 'This Week':
+                return diffDays > 2 && diffDays <= 7;
+              case 'Upcoming':
+                return diffDays > 7;
+              default:
+                return true;
+            }
+          });
+        } else if (sectionFilter === 'Completed') {
+          filteredTasks = filteredTasks.filter(task => task.status === 'done');
+        }
+
+        // Filter by search query
+        if (searchQuery.trim()) {
+          const query = searchQuery.toLowerCase();
+          filteredTasks = filteredTasks.filter(task => 
+            task.title.toLowerCase().includes(query) ||
+            task.category?.toLowerCase().includes(query) ||
+            (task.isStarred && 'priority'.includes(query))
+          );
+        }
+
+        // Filter by selected categories
+        if (selectedCategories.length > 0) {
+          filteredTasks = filteredTasks.filter(task => 
+            task.category && selectedCategories.includes(task.category)
+          );
+        }
+
+        // Sort tasks
+        filteredTasks.sort((a, b) => {
+          let aValue: any, bValue: any;
+          
+          switch (sortBy) {
+            case 'title':
+              aValue = a.title.toLowerCase();
+              bValue = b.title.toLowerCase();
+              break;
+            case 'dueAt':
+              aValue = a.dueAt ? new Date(a.dueAt).getTime() : 0;
+              bValue = b.dueAt ? new Date(b.dueAt).getTime() : 0;
+              break;
+            case 'created_at':
+              aValue = new Date(a.inserted_at).getTime();
+              bValue = new Date(b.inserted_at).getTime();
+              break;
+            case 'priority':
+              aValue = a.isStarred ? 1 : 0;
+              bValue = b.isStarred ? 1 : 0;
+              break;
+            default:
+              return 0;
+          }
+
+          if (aValue < bValue) return sortOrder === 'asc' ? -1 : 1;
+          if (aValue > bValue) return sortOrder === 'asc' ? 1 : -1;
+          return 0;
+        });
+
+        return filteredTasks;
+      },
     }),
     {
       name: 'smart-todo-storage',

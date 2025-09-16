@@ -1,8 +1,21 @@
 import React, { useState } from 'react';
-import { Plus, Check, Edit, Trash2, Star } from 'lucide-react';
+import { Plus, Check, Edit, Trash2, Star, Clock, Calendar } from 'lucide-react';
 import { useTodoStore } from '../store';
 import { groupTasksBySection, groupTasksByCategory } from '../rules';
 import TaskItem from './TaskItem';
+
+const formatDueTime = (dueAt: string) => {
+  const due = new Date(dueAt);
+  const now = new Date();
+  const diffDays = Math.ceil((due.getTime() - now.getTime()) / (1000 * 60 * 60 * 24));
+  
+  if (diffDays === 0) return 'Today';
+  if (diffDays === 1) return 'Tomorrow';
+  if (diffDays < 0) return `${Math.abs(diffDays)} days overdue`;
+  if (diffDays <= 7) return `In ${diffDays} days`;
+  
+  return due.toLocaleDateString();
+};
 
 const TodoCard: React.FC = () => {
   const { 
@@ -19,12 +32,15 @@ const TodoCard: React.FC = () => {
     toggleTaskStar,
     sectionFilter,
     taskGroupingMode,
-    categories
+    categories,
+    getFilteredTasks
   } = useTodoStore();
   
   const [newTaskTitle, setNewTaskTitle] = useState('');
   const [newTaskDueAt, setNewTaskDueAt] = useState('');
   const [newTaskCategory, setNewTaskCategory] = useState('');
+  const [newTaskPriority, setNewTaskPriority] = useState(false);
+  const [showAdvanced, setShowAdvanced] = useState(false);
 
   const handleAddTask = (e: React.FormEvent) => {
     e.preventDefault();
@@ -35,24 +51,33 @@ const TodoCard: React.FC = () => {
         newTaskCategory || null,
         null // No parent for main tasks added through the form
       );
+      
+      // If priority is set, toggle the star after adding
+      if (newTaskPriority) {
+        setTimeout(() => {
+          const newTask = tasks[tasks.length - 1];
+          if (newTask) {
+            toggleTaskStar(newTask.id);
+          }
+        }, 100);
+      }
+      
       setNewTaskTitle('');
       setNewTaskDueAt('');
       setNewTaskCategory('');
+      setNewTaskPriority(false);
+      setShowAdvanced(false);
     }
   };
 
-  let filteredTasks = tasks.filter(task => task.status === 'pending');
-  // Only show top-level tasks (no parent) in the main list
-  filteredTasks = filteredTasks.filter(task => !task.parent_id);
+  // Get filtered tasks from store
+  const filteredTasks = getFilteredTasks();
   
-  if (showPriorityOnly) {
-    filteredTasks = filteredTasks.filter(task => task.isStarred);
-  }
-
+  // Group tasks for display
   const groupedTasks = groupTasksBySection(filteredTasks);
   const completedTasks = tasks.filter(task => task.status === 'done' && !task.parent_id);
 
-  const getFilteredTasks = () => {
+  const getDisplayTasks = () => {
     if (sectionFilter === 'All') {
       return groupedTasks;
     } else if (sectionFilter === 'Completed') {
@@ -64,7 +89,7 @@ const TodoCard: React.FC = () => {
     }
   };
 
-  const displayTasks = getFilteredTasks();
+  const displayTasks = getDisplayTasks();
 
 
   const renderSuggestion = (suggestion: typeof suggestedTasks[0]) => (
@@ -121,36 +146,84 @@ const TodoCard: React.FC = () => {
               value={newTaskTitle}
               onChange={(e) => setNewTaskTitle(e.target.value)}
               placeholder="Add a new task..."
-              className="flex-1 px-2 py-1.5 sm:py-2 text-xs sm:text-sm border border-neutral-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+              className="flex-1 px-3 py-2 text-sm border border-neutral-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
             />
             <button
-              type="submit"
-              className="px-2 py-1.5 sm:py-2 lg:px-4 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors flex items-center space-x-1 flex-shrink-0"
+              type="button"
+              onClick={() => setShowAdvanced(!showAdvanced)}
+              className="px-3 py-2 border border-neutral-300 rounded-lg hover:bg-gray-50 transition-colors flex items-center space-x-1"
+              title="More options"
             >
-              <Plus size={14} />
-              <span className="hidden sm:inline text-xs sm:text-sm">Add</span>
+              <Calendar size={16} />
+            </button>
+            <button
+              type="submit"
+              className="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors flex items-center space-x-1"
+            >
+              <Plus size={16} />
+              <span className="text-sm">Add</span>
             </button>
           </div>
           
-          <div className="flex space-x-1.5">
-            <input
-              type="datetime-local"
-              value={newTaskDueAt}
-              onChange={(e) => setNewTaskDueAt(e.target.value)}
-              className="flex-1 px-2 py-1.5 text-xs sm:text-sm border border-neutral-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
-            />
-            <select
-              value={newTaskCategory}
-              onChange={(e) => setNewTaskCategory(e.target.value)}
-              className="flex-1 px-2 py-1.5 text-xs sm:text-sm border border-neutral-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
-            >
-              <option value="">No category</option>
-              {categories.map(category => (
-                <option key={category.id} value={category.name}>{category.name}</option>
-              ))}
-            </select>
-          </div>
+          {showAdvanced && (
+            <div className="space-y-3 p-3 bg-gray-50 rounded-lg">
+              <div className="flex space-x-2">
+                <div className="flex-1">
+                  <label className="block text-xs font-medium text-gray-700 mb-1">Due Date</label>
+                  <input
+                    type="datetime-local"
+                    value={newTaskDueAt}
+                    onChange={(e) => setNewTaskDueAt(e.target.value)}
+                    className="w-full px-3 py-2 text-sm border border-neutral-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                  />
+                </div>
+                <div className="flex-1">
+                  <label className="block text-xs font-medium text-gray-700 mb-1">Category</label>
+                  <select
+                    value={newTaskCategory}
+                    onChange={(e) => setNewTaskCategory(e.target.value)}
+                    className="w-full px-3 py-2 text-sm border border-neutral-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                  >
+                    <option value="">No category</option>
+                    {categories.map(category => (
+                      <option key={category.id} value={category.name}>{category.name}</option>
+                    ))}
+                  </select>
+                </div>
+              </div>
+              
+              <div className="flex items-center space-x-2">
+                <button
+                  type="button"
+                  onClick={() => setNewTaskPriority(!newTaskPriority)}
+                  className={`flex items-center space-x-2 px-3 py-2 rounded-lg border transition-colors ${
+                    newTaskPriority 
+                      ? 'bg-amber-50 border-amber-200 text-amber-700' 
+                      : 'bg-white border-gray-300 text-gray-700 hover:bg-gray-50'
+                  }`}
+                >
+                  <Star size={16} className={newTaskPriority ? 'fill-current' : ''} />
+                  <span className="text-sm">Priority</span>
+                </button>
+              </div>
+            </div>
+          )}
         </form>
+      </div>
+
+      {/* Priority Filter Toggle */}
+      <div className="px-1.5 sm:px-3 lg:px-6 py-2 border-b border-neutral-200">
+        <button
+          onClick={togglePriorityFilter}
+          className={`flex items-center space-x-2 px-3 py-1.5 rounded-lg text-sm transition-colors ${
+            showPriorityOnly 
+              ? 'bg-amber-100 text-amber-700 border border-amber-200' 
+              : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+          }`}
+        >
+          <Star size={16} className={showPriorityOnly ? 'fill-current' : ''} />
+          <span>{showPriorityOnly ? 'Show All Tasks' : 'Show Priority Only'}</span>
+        </button>
       </div>
 
       {/* Task sections */}

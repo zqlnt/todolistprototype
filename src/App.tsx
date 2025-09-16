@@ -14,7 +14,6 @@ import SentinelAI from './pages/SentinelAI';
 import Connections from './pages/Connections';
 import CompletedTasks from './pages/CompletedTasks';
 import Auth from './pages/Auth';
-import SwipeDemo from './components/SwipeDemo';
 import { useTodoStore } from './store';
 import { apiService } from './services/api';
 
@@ -91,8 +90,6 @@ function App() {
         return <Connections />;
       case 'completedTasks':
         return <CompletedTasks />;
-      case 'swipe-demo':
-        return <SwipeDemo />;
       default:
         return <Dashboard />;
     }
@@ -135,12 +132,40 @@ function App() {
       <button 
         onClick={() => {
           useTodoStore.getState().setCurrentPage('todos');
+          // Focus on the task input when navigating to todos
+          setTimeout(() => {
+            const taskInput = document.querySelector('input[placeholder="Add a new task..."]') as HTMLInputElement;
+            if (taskInput) {
+              taskInput.focus();
+            }
+          }, 100);
         }}
-        className={`fixed bottom-20 right-2 lg:hidden w-10 h-10 bg-indigo-600 text-white rounded-full shadow-lg hover:bg-indigo-700 transition-colors flex items-center justify-center z-30 ${
+        className={`fixed bottom-20 right-4 lg:hidden w-12 h-12 bg-indigo-600 text-white rounded-full shadow-lg hover:bg-indigo-700 transition-all transform hover:scale-105 flex items-center justify-center z-30 ${
           currentPage === 'ai' ? 'hidden' : ''
         }`}
+        title="Add new task"
       >
-        <Plus size={16} />
+        <Plus size={20} />
+      </button>
+
+      {/* Floating Add Button - Desktop */}
+      <button 
+        onClick={() => {
+          useTodoStore.getState().setCurrentPage('todos');
+          // Focus on the task input when navigating to todos
+          setTimeout(() => {
+            const taskInput = document.querySelector('input[placeholder="Add a new task..."]') as HTMLInputElement;
+            if (taskInput) {
+              taskInput.focus();
+            }
+          }, 100);
+        }}
+        className={`fixed bottom-8 right-8 hidden lg:flex w-14 h-14 bg-indigo-600 text-white rounded-full shadow-lg hover:bg-indigo-700 transition-all transform hover:scale-105 flex items-center justify-center z-30 ${
+          currentPage === 'ai' ? 'hidden' : ''
+        }`}
+        title="Add new task"
+      >
+        <Plus size={24} />
       </button>
     </div>
   );
