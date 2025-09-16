@@ -5,6 +5,8 @@ import MobileTodoList from '../components/MobileTodoList';
 import { useTodoStore } from '../store';
 
 const TodoList: React.FC = () => {
+  console.log('TodoList - Component rendering');
+  
   const {
     searchQuery,
     setSearchQuery,

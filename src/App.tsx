@@ -69,10 +69,16 @@ function App() {
   }
 
   const renderCurrentPage = () => {
+    console.log('App - currentPage:', currentPage);
+    console.log('App - authStatus:', authStatus);
+    console.log('App - session:', session);
+    console.log('App - isGuestMode:', isGuestMode);
+    
     switch (currentPage) {
       case 'dashboard':
         return <Dashboard />;
       case 'todos':
+        console.log('App - Rendering TodoList component');
         return <TodoList />;
       case 'emails':
         return <Inbox />;
