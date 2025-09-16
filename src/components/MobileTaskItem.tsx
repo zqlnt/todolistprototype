@@ -65,62 +65,63 @@ const MobileTaskItem: React.FC<MobileTaskItemProps> = ({ task, onPress }) => {
         onClick={() => onPress(task)}
       >
         <div className="flex items-center space-x-3">
-        {/* Left side - Checkbox or Folder icon */}
-        {isFolder ? (
-          <button
-            onClick={(e) => {
-              e.stopPropagation();
-              setIsFolderExpanded(!isFolderExpanded);
-            }}
-            className="w-5 h-5 flex items-center justify-center text-gray-500 hover:text-gray-700 transition-colors"
-          >
-            {isFolderExpanded ? <FolderOpen size={16} /> : <Folder size={16} />}
-          </button>
-        ) : (
-          <button
-            onClick={(e) => {
-              e.stopPropagation();
-              toggleDone(task.id);
-            }}
-            className={`w-5 h-5 rounded-full border-2 flex items-center justify-center transition-colors ${
-              task.status === 'done' 
-                ? 'bg-green-500 border-green-500 text-white' 
-                : 'border-gray-300 hover:border-gray-400'
-            }`}
-          >
-            {task.status === 'done' && <Check size={12} />}
-          </button>
-        )}
+          {/* Left side - Checkbox or Folder icon */}
+          {isFolder ? (
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                setIsFolderExpanded(!isFolderExpanded);
+              }}
+              className="w-5 h-5 flex items-center justify-center text-gray-500 hover:text-gray-700 transition-colors"
+            >
+              {isFolderExpanded ? <FolderOpen size={16} /> : <Folder size={16} />}
+            </button>
+          ) : (
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                toggleDone(task.id);
+              }}
+              className={`w-5 h-5 rounded-full border-2 flex items-center justify-center transition-colors ${
+                task.status === 'done' 
+                  ? 'bg-green-500 border-green-500 text-white' 
+                  : 'border-gray-300 hover:border-gray-400'
+              }`}
+            >
+              {task.status === 'done' && <Check size={12} />}
+            </button>
+          )}
 
-        {/* Center - Task content */}
-        <div className="flex-1 min-w-0">
-          <div className="flex items-center space-x-2">
-            <span className={`text-sm font-medium ${
-              task.status === 'done' ? 'line-through text-gray-500' : 'text-gray-900'
-            }`}>
-              {task.title}
-            </span>
-            {task.isStarred && (
-              <Star size={14} className="text-yellow-500 flex-shrink-0" fill="currentColor" />
+          {/* Center - Task content */}
+          <div className="flex-1 min-w-0">
+            <div className="flex items-center space-x-2">
+              <span className={`text-sm font-medium ${
+                task.status === 'done' ? 'line-through text-gray-500' : 'text-gray-900'
+              }`}>
+                {task.title}
+              </span>
+              {task.isStarred && (
+                <Star size={14} className="text-yellow-500 flex-shrink-0" fill="currentColor" />
+              )}
+            </div>
+            {task.dueAt && (
+              <div className="text-xs text-gray-500 mt-1">
+                {formatTimeLabel(task.dueAt)}
+              </div>
             )}
           </div>
-          {task.dueAt && (
-            <div className="text-xs text-gray-500 mt-1">
-              {formatTimeLabel(task.dueAt)}
-            </div>
-          )}
-        </div>
 
-        {/* Right side - Time and priority */}
-        <div className="flex items-center space-x-2">
-          {task.dueAt && (
-            <span className="text-xs text-gray-500">
-              {formatTimeLabel(task.dueAt)}
-            </span>
-          )}
-          {task.isStarred && (
-            <Star size={14} className="text-yellow-500" fill="currentColor" />
-          )}
+          {/* Right side - Time and priority */}
+          <div className="flex items-center space-x-2">
+            {task.dueAt && (
+              <span className="text-xs text-gray-500">
+                {formatTimeLabel(task.dueAt)}
+              </span>
+            )}
+            {task.isStarred && (
+              <Star size={14} className="text-yellow-500" fill="currentColor" />
+            )}
+          </div>
         </div>
       </div>
     </SwipeableRow>
