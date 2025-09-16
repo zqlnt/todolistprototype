@@ -3,6 +3,7 @@ import { Plus, Check, Edit, Trash2, Star, Clock, Calendar } from 'lucide-react';
 import { useTodoStore } from '../store';
 import { groupTasksBySection, groupTasksByCategory } from '../rules';
 import TaskItem from './TaskItem';
+import DraggableTaskList from './DraggableTaskList';
 
 const formatDueTime = (dueAt: string) => {
   const due = new Date(dueAt);
@@ -33,7 +34,9 @@ const TodoCard: React.FC = () => {
     sectionFilter,
     taskGroupingMode,
     categories,
-    getFilteredTasks
+    getFilteredTasks,
+    reorderTasks,
+    moveTaskToCategory
   } = useTodoStore();
   
   const [newTaskTitle, setNewTaskTitle] = useState('');
@@ -256,9 +259,11 @@ const TodoCard: React.FC = () => {
               </h3>
               
               <div className="space-y-0.5 sm:space-y-0">
-                {sectionTasks.map(task => (
-                  <TaskItem key={task.id} task={task} />
-                ))}
+                <DraggableTaskList
+                  tasks={sectionTasks}
+                  onReorder={reorderTasks}
+                  onMoveToCategory={moveTaskToCategory}
+                />
                 
                 {/* Email suggestions */}
                 {suggestedTasks.length > 0 && (

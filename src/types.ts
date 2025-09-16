@@ -8,6 +8,7 @@ export interface Task {
   isStarred: boolean;
   category?: string | null;
   parent_id?: string | null;
+  is_folder?: boolean;
   inserted_at: string;
   updated_at: string;
 }
@@ -79,6 +80,15 @@ export interface Notification {
   createdAt: string;
   isRead?: boolean;
   relatedId?: string;
+}
+
+export interface TaskReminder {
+  id: string;
+  taskId: string;
+  reminderTime: string;
+  type: '1hour' | '1day' | 'custom' | 'deadline';
+  isActive: boolean;
+  createdAt: string;
 }
 
 export type TaskSection = 'Today' | 'Tomorrow' | 'This Week' | 'Upcoming';

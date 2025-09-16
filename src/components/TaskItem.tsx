@@ -1,9 +1,10 @@
 import React, { useState } from 'react';
-import { Check, Edit, Trash2, Star, Plus, Move } from 'lucide-react';
+import { Check, Edit, Trash2, Star, Plus, Move, Folder, FolderOpen, Bell } from 'lucide-react';
 import { useTodoStore } from '../store';
 import { Task } from '../types';
 import SwipeableRow from './SwipeableRow';
 import MoveTaskModal from './MoveTaskModal';
+import ReminderModal from './ReminderModal';
 
 interface TaskItemProps {
   task: Task;
@@ -17,7 +18,10 @@ const TaskItem: React.FC<TaskItemProps> = ({ task, level = 0 }) => {
     updateTask, 
     deleteTask, 
     addTask,
-    toggleTaskStar
+    toggleTaskStar,
+    convertTaskToFolder,
+    convertFolderToTask,
+    getTaskReminders
   } = useTodoStore();
   
   const [showAddSubtask, setShowAddSubtask] = useState(false);
@@ -25,6 +29,8 @@ const TaskItem: React.FC<TaskItemProps> = ({ task, level = 0 }) => {
   const [editingTask, setEditingTask] = useState<string | null>(null);
   const [editTitle, setEditTitle] = useState('');
   const [showMoveModal, setShowMoveModal] = useState(false);
+  const [isFolderExpanded, setIsFolderExpanded] = useState(true);
+  const [showReminderModal, setShowReminderModal] = useState(false);
 
   const formatDueTime = (dueAt: string) => {
     const due = new Date(dueAt);
@@ -81,6 +87,8 @@ const TaskItem: React.FC<TaskItemProps> = ({ task, level = 0 }) => {
 
   const subtasks = getSubtasks(task.id);
   const isSubtask = level > 0;
+  const isFolder = task.is_folder;
+  const reminders = getTaskReminders(task.id);
 
   return (
     <div className="border-b border-neutral-100 last:border-b-0">
@@ -95,16 +103,25 @@ const TaskItem: React.FC<TaskItemProps> = ({ task, level = 0 }) => {
         <div className={`flex items-start space-x-2 py-2 sm:py-4 px-2 sm:px-4 hover:bg-neutral-50 transition-colors group ${
           isSubtask ? '' : ''
         }`}>
-        <button
-          onClick={() => toggleDone(task.id)}
-          className={`${isSubtask ? 'w-3 h-3 sm:w-4 sm:h-4' : 'w-4 h-4 sm:w-5 sm:h-5'} rounded border-2 flex items-center justify-center transition-colors flex-shrink-0 mt-0.5 ${
-            task.status === 'done' 
-              ? 'bg-green-500 border-green-500 text-white' 
-              : 'border-neutral-300 hover:border-neutral-400'
-          }`}
-        >
-          {task.status === 'done' && <Check size={isSubtask ? 8 : 10} className={isSubtask ? 'sm:w-2.5 sm:h-2.5' : 'sm:w-3 sm:h-3'} />}
-        </button>
+        {isFolder ? (
+          <button
+            onClick={() => setIsFolderExpanded(!isFolderExpanded)}
+            className="w-4 h-4 sm:w-5 sm:h-5 flex items-center justify-center transition-colors flex-shrink-0 mt-0.5 text-neutral-500 hover:text-neutral-700"
+          >
+            {isFolderExpanded ? <FolderOpen size={isSubtask ? 12 : 16} /> : <Folder size={isSubtask ? 12 : 16} />}
+          </button>
+        ) : (
+          <button
+            onClick={() => toggleDone(task.id)}
+            className={`${isSubtask ? 'w-3 h-3 sm:w-4 sm:h-4' : 'w-4 h-4 sm:w-5 sm:h-5'} rounded border-2 flex items-center justify-center transition-colors flex-shrink-0 mt-0.5 ${
+              task.status === 'done' 
+                ? 'bg-green-500 border-green-500 text-white' 
+                : 'border-neutral-300 hover:border-neutral-400'
+            }`}
+          >
+            {task.status === 'done' && <Check size={isSubtask ? 8 : 10} className={isSubtask ? 'sm:w-2.5 sm:h-2.5' : 'sm:w-3 sm:h-3'} />}
+          </button>
+        )}
         
         <div className="flex-1 min-w-0">
           {editingTask === task.id ? (
@@ -157,6 +174,12 @@ const TaskItem: React.FC<TaskItemProps> = ({ task, level = 0 }) => {
                       {subtasks.filter(s => s.status === 'done').length}/{subtasks.length} subtasks
                     </span>
                   )}
+                  {reminders.length > 0 && (
+                    <span className="text-[10px] sm:text-xs text-amber-600 bg-amber-100 px-1.5 py-0.5 rounded-full flex items-center space-x-1">
+                      <Bell size={8} />
+                      <span>{reminders.length} reminder{reminders.length !== 1 ? 's' : ''}</span>
+                    </span>
+                  )}
                 </div>
                 
                 {task.status === 'pending' && (
@@ -184,12 +207,40 @@ const TaskItem: React.FC<TaskItemProps> = ({ task, level = 0 }) => {
                     </button>
                     
                     <button
+                      onClick={() => setShowReminderModal(true)}
+                      className="p-1 text-neutral-400 hover:text-amber-600 transition-colors"
+                      title="Set reminder"
+                    >
+                      <Bell size={12} />
+                    </button>
+                    
+                    <button
                       onClick={() => setShowMoveModal(true)}
                       className="p-1 text-neutral-400 hover:text-blue-600 transition-colors"
                       title="Move task"
                     >
                       <Move size={12} />
                     </button>
+                    
+                    {!isFolder && (
+                      <button
+                        onClick={() => convertTaskToFolder(task.id)}
+                        className="p-1 text-neutral-400 hover:text-purple-600 transition-colors"
+                        title="Convert to folder"
+                      >
+                        <Folder size={12} />
+                      </button>
+                    )}
+                    
+                    {isFolder && (
+                      <button
+                        onClick={() => convertFolderToTask(task.id)}
+                        className="p-1 text-neutral-400 hover:text-purple-600 transition-colors"
+                        title="Convert to task"
+                      >
+                        <Check size={12} />
+                      </button>
+                    )}
                     
                     <button
                       onClick={() => startEditing(task.id, task.title)}
@@ -244,7 +295,7 @@ const TaskItem: React.FC<TaskItemProps> = ({ task, level = 0 }) => {
       )}
       
       {/* Render subtasks */}
-      {!isSubtask && subtasks.length > 0 && (
+      {!isSubtask && subtasks.length > 0 && (isFolder ? isFolderExpanded : true) && (
         <div className="space-y-0">
           {subtasks.map(subtask => (
             <TaskItem key={subtask.id} task={subtask} level={level + 1} />
@@ -258,6 +309,15 @@ const TaskItem: React.FC<TaskItemProps> = ({ task, level = 0 }) => {
         onClose={() => setShowMoveModal(false)}
         taskId={task.id}
         currentCategory={task.category || undefined}
+      />
+
+      {/* Reminder Modal */}
+      <ReminderModal
+        isOpen={showReminderModal}
+        onClose={() => setShowReminderModal(false)}
+        taskId={task.id}
+        taskTitle={task.title}
+        dueAt={task.dueAt || undefined}
       />
     </div>
   );

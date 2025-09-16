@@ -1,6 +1,6 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
-import { Task, Email, CalEvent, SuggestedTask, TaskSection, Contact, Chat, Notification, AppPage, CalendarView, DashboardWidget, NotificationSettings, EmailSettings, UserProfile, AuthStatus, AuthError, TaskGroupingMode, Category } from './types';
+import { Task, Email, CalEvent, SuggestedTask, TaskSection, Contact, Chat, Notification, AppPage, CalendarView, DashboardWidget, NotificationSettings, EmailSettings, UserProfile, AuthStatus, AuthError, TaskGroupingMode, Category, TaskReminder } from './types';
 // import { groupTasksBySection } from './rules'; // Unused import
 import { apiService } from './services/api';
 import { listTasks, createTask, setStatus, toggleStar, updateTask as updateTaskService, deleteTask as deleteTaskService } from './services/tasks';
@@ -33,6 +33,7 @@ interface TodoState {
   chats: Chat[];
   notifications: Notification[];
   categories: Category[];
+  taskReminders: TaskReminder[];
   
   // Authentication
   session: Session | null;
@@ -99,6 +100,13 @@ interface TodoState {
   fetchCategories: () => Promise<void>;
   toggleTaskStar: (taskId: string) => void;
   setCalendarView: (view: CalendarView) => void;
+  reorderTasks: (oldIndex: number, newIndex: number) => void;
+  moveTaskToCategory: (taskId: string, categoryId: string) => Promise<void>;
+  convertTaskToFolder: (taskId: string) => Promise<void>;
+  convertFolderToTask: (taskId: string) => Promise<void>;
+  addTaskReminder: (taskId: string, reminderTime: string, type: '1hour' | '1day' | 'custom' | 'deadline') => Promise<void>;
+  removeTaskReminder: (reminderId: string) => Promise<void>;
+  getTaskReminders: (taskId: string) => TaskReminder[];
   
   // Contact Actions
   addContact: (contact: Omit<Contact, 'id'>) => void;
@@ -247,6 +255,7 @@ export const useTodoStore = create<TodoState>()(
       chats: createInitialChats(),
       notifications: createInitialNotifications(),
       categories: [],
+      taskReminders: [],
       
       // Authentication state
       session: null,
@@ -752,6 +761,191 @@ export const useTodoStore = create<TodoState>()(
 
       setCalendarView: (view: CalendarView) => {
         set({ calendarView: view });
+      },
+
+      reorderTasks: (oldIndex: number, newIndex: number) => {
+        set(state => {
+          const newTasks = [...state.tasks];
+          const [movedTask] = newTasks.splice(oldIndex, 1);
+          newTasks.splice(newIndex, 0, movedTask);
+          return { tasks: newTasks };
+        });
+      },
+
+      moveTaskToCategory: async (taskId: string, categoryId: string) => {
+        const { session, isGuestMode } = get();
+        
+        if (isGuestMode) {
+          // For guest mode, update locally
+          set(state => ({
+            tasks: state.tasks.map(task => 
+              task.id === taskId 
+                ? { ...task, category: categoryId, updated_at: new Date().toISOString() }
+                : task
+            )
+          }));
+          return;
+        }
+        
+        if (!session) {
+          console.error('No session available for moving task');
+          return;
+        }
+        
+        try {
+          apiService.setToken(session.access_token);
+          const response = await updateTaskService(taskId, { category: categoryId });
+          
+          if (response && 'success' in response && response.success && response.data) {
+            set(state => ({
+              tasks: state.tasks.map(task => 
+                task.id === taskId ? response.data : task
+              )
+            }));
+          }
+        } catch (error) {
+          console.error('Error moving task:', error);
+        }
+      },
+
+      convertTaskToFolder: async (taskId: string) => {
+        const { session, isGuestMode } = get();
+        
+        if (isGuestMode) {
+          // For guest mode, update locally
+          set(state => ({
+            tasks: state.tasks.map(task => 
+              task.id === taskId 
+                ? { ...task, is_folder: true, updated_at: new Date().toISOString() }
+                : task
+            )
+          }));
+          return;
+        }
+        
+        if (!session) {
+          console.error('No session available for converting task');
+          return;
+        }
+        
+        try {
+          apiService.setToken(session.access_token);
+          const response = await updateTaskService(taskId, { is_folder: true });
+          
+          if (response && 'success' in response && response.success && response.data) {
+            set(state => ({
+              tasks: state.tasks.map(task => 
+                task.id === taskId ? response.data : task
+              )
+            }));
+          }
+        } catch (error) {
+          console.error('Error converting task to folder:', error);
+        }
+      },
+
+      convertFolderToTask: async (taskId: string) => {
+        const { session, isGuestMode } = get();
+        
+        if (isGuestMode) {
+          // For guest mode, update locally
+          set(state => ({
+            tasks: state.tasks.map(task => 
+              task.id === taskId 
+                ? { ...task, is_folder: false, updated_at: new Date().toISOString() }
+                : task
+            )
+          }));
+          return;
+        }
+        
+        if (!session) {
+          console.error('No session available for converting folder');
+          return;
+        }
+        
+        try {
+          apiService.setToken(session.access_token);
+          const response = await updateTaskService(taskId, { is_folder: false });
+          
+          if (response && 'success' in response && response.success && response.data) {
+            set(state => ({
+              tasks: state.tasks.map(task => 
+                task.id === taskId ? response.data : task
+              )
+            }));
+          }
+        } catch (error) {
+          console.error('Error converting folder to task:', error);
+        }
+      },
+
+      addTaskReminder: async (taskId: string, reminderTime: string, type: '1hour' | '1day' | 'custom' | 'deadline') => {
+        const { session, isGuestMode } = get();
+        
+        const newReminder: TaskReminder = {
+          id: `reminder-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+          taskId,
+          reminderTime,
+          type,
+          isActive: true,
+          createdAt: new Date().toISOString()
+        };
+        
+        if (isGuestMode) {
+          // For guest mode, add locally
+          set(state => ({
+            taskReminders: [...state.taskReminders, newReminder]
+          }));
+          return;
+        }
+        
+        if (!session) {
+          console.error('No session available for adding reminder');
+          return;
+        }
+        
+        try {
+          // In a real app, you'd save this to the backend
+          // For now, we'll just add it locally
+          set(state => ({
+            taskReminders: [...state.taskReminders, newReminder]
+          }));
+        } catch (error) {
+          console.error('Error adding reminder:', error);
+        }
+      },
+
+      removeTaskReminder: async (reminderId: string) => {
+        const { session, isGuestMode } = get();
+        
+        if (isGuestMode) {
+          // For guest mode, remove locally
+          set(state => ({
+            taskReminders: state.taskReminders.filter(reminder => reminder.id !== reminderId)
+          }));
+          return;
+        }
+        
+        if (!session) {
+          console.error('No session available for removing reminder');
+          return;
+        }
+        
+        try {
+          // In a real app, you'd remove this from the backend
+          // For now, we'll just remove it locally
+          set(state => ({
+            taskReminders: state.taskReminders.filter(reminder => reminder.id !== reminderId)
+          }));
+        } catch (error) {
+          console.error('Error removing reminder:', error);
+        }
+      },
+
+      getTaskReminders: (taskId: string) => {
+        const { taskReminders } = get();
+        return taskReminders.filter(reminder => reminder.taskId === taskId && reminder.isActive);
       },
 
       // Contact Actions
