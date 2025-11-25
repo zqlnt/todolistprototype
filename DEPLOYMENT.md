@@ -2,7 +2,7 @@
 
 This document explains how to deploy the Sentinel Todo App to production using Render, Vercel, and Supabase.
 
-## 🏗️ Architecture Overview
+## Architecture Overview
 
 ```
 ┌─────────────────┐    ┌─────────────────┐    ┌─────────────────┐
@@ -12,7 +12,7 @@ This document explains how to deploy the Sentinel Todo App to production using R
 └─────────────────┘    └─────────────────┘    └─────────────────┘
 ```
 
-## 🚀 Deployment Steps
+## Deployment Steps
 
 ### 1. Database Setup (Supabase)
 
@@ -72,7 +72,7 @@ This document explains how to deploy the Sentinel Todo App to production using R
    - Vercel will automatically deploy on push to main
    - Note your frontend URL (e.g., `https://your-app.vercel.app`)
 
-## 🔧 Environment Variables
+## Environment Variables
 
 ### Backend (.env)
 ```env
@@ -97,7 +97,7 @@ VITE_SUPABASE_URL=https://your-project.supabase.co
 VITE_SUPABASE_ANON_KEY=your_anon_key
 ```
 
-## 🗄️ Database Configuration
+## Database Configuration
 
 ### Required Tables
 
@@ -149,7 +149,7 @@ CREATE POLICY "Users can insert their own tasks" ON tasks
 -- Similar policies for categories...
 ```
 
-## 🔍 Health Checks
+## Health Checks
 
 ### Backend Health Check
 ```bash
@@ -171,7 +171,7 @@ curl https://your-frontend.vercel.app/
 
 Should return the React application.
 
-## 🚨 Troubleshooting
+## Troubleshooting
 
 ### Common Issues
 
@@ -197,7 +197,7 @@ Should return the React application.
 - **Vercel**: Check logs in Vercel dashboard
 - **Supabase**: Check logs in Supabase dashboard
 
-## 🔄 CI/CD Pipeline
+## CI/CD Pipeline
 
 The app uses automatic deployment:
 
@@ -206,7 +206,7 @@ The app uses automatic deployment:
 3. **Vercel builds and deploys frontend**
 4. **Both services are updated automatically**
 
-## 📊 Monitoring
+## Monitoring
 
 ### Backend Monitoring (Render)
 - CPU and memory usage
@@ -226,7 +226,7 @@ The app uses automatic deployment:
 - Storage usage
 - Real-time metrics
 
-## 🔐 Security Considerations
+## Security Considerations
 
 1. **Environment Variables**
    - Never commit secrets to Git
@@ -243,7 +243,7 @@ The app uses automatic deployment:
    - CORS properly configured
    - Input validation on all endpoints
 
-## 📈 Scaling
+## Scaling
 
 ### Backend Scaling (Render)
 - Upgrade to paid plan for better performance

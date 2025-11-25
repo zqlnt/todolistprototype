@@ -35,12 +35,12 @@ print(f"SUPABASE_KEY: {SUPABASE_KEY[:20]}..." if SUPABASE_KEY else "SUPABASE_KEY
 if SUPABASE_URL and SUPABASE_KEY:
     try:
         supabase_client = create_client(SUPABASE_URL, SUPABASE_KEY)
-        print("✅ Supabase client initialized successfully")
+        print("[OK] Supabase client initialized successfully")
     except Exception as e:
-        print(f"❌ Failed to initialize Supabase client: {e}")
+        print(f"[ERROR] Failed to initialize Supabase client: {e}")
         supabase_client = None
 else:
-    print("❌ Missing Supabase environment variables")
+    print("[ERROR] Missing Supabase environment variables")
 
 # Fallback in-memory database for development/testing
 class FallbackDatabase:

@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Search, Star, MoreVertical, Menu, Plus, Check, Clock, Folder, FolderOpen } from 'lucide-react';
+import { Search, Star, MoreVertical, Plus, Check, Clock, Folder, FolderOpen } from 'lucide-react';
 import { useTodoStore } from '../store';
 import MobileTaskItem from './MobileTaskItem';
 import MobileTaskSettingsModal from './MobileTaskSettingsModal';
@@ -108,42 +108,10 @@ const MobileTodoList: React.FC = () => {
 
   return (
     <div className="h-full bg-gray-50">
-      {/* Top Bar */}
+      {/* Top Bar - Search and Controls */}
       <div className="bg-white border-b border-gray-200 sticky top-0 z-30">
-        <div className="flex items-center justify-between px-4 py-3">
-          {/* Left - Menu button */}
-          <button className="p-2">
-            <Menu size={20} className="text-gray-600" />
-          </button>
-          
-          {/* Center - Title */}
-          <h1 className="text-lg font-bold text-gray-900 absolute left-1/2 transform -translate-x-1/2">
-            TO DO LIST
-          </h1>
-          
-          {/* Right - Priority toggle and settings */}
-          <div className="flex items-center space-x-2">
-            <button
-              onClick={togglePriorityFilter}
-              className={`p-2 rounded-lg transition-colors ${
-                showPriorityOnly 
-                  ? 'bg-yellow-100 text-yellow-700' 
-                  : 'text-gray-600 hover:bg-gray-100'
-              }`}
-            >
-              <Star size={20} fill={showPriorityOnly ? 'currentColor' : 'none'} />
-            </button>
-            <button
-              onClick={() => setShowSettings(!showSettings)}
-              className="p-2 text-gray-600 hover:bg-gray-100 rounded-lg transition-colors"
-            >
-              <MoreVertical size={20} />
-            </button>
-          </div>
-        </div>
-
-        {/* Search Bar */}
-        <div className="px-4 pb-3">
+        <div className="px-4 py-3 space-y-3">
+          {/* Search Bar */}
           <div className="relative">
             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
             <input
@@ -153,6 +121,27 @@ const MobileTodoList: React.FC = () => {
               onChange={(e) => setSearchQuery(e.target.value)}
               className="w-full pl-10 pr-4 py-3 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
             />
+          </div>
+          
+          {/* Controls */}
+          <div className="flex items-center justify-between">
+            <button
+              onClick={togglePriorityFilter}
+              className={`flex items-center space-x-2 px-3 py-2 rounded-lg transition-colors ${
+                showPriorityOnly 
+                  ? 'bg-yellow-100 text-yellow-700' 
+                  : 'text-gray-600 hover:bg-gray-100'
+              }`}
+            >
+              <Star size={16} fill={showPriorityOnly ? 'currentColor' : 'none'} />
+              <span className="text-sm">{showPriorityOnly ? 'All Tasks' : 'Priority'}</span>
+            </button>
+            <button
+              onClick={() => setShowSettings(!showSettings)}
+              className="p-2 text-gray-600 hover:bg-gray-100 rounded-lg transition-colors"
+            >
+              <MoreVertical size={20} />
+            </button>
           </div>
         </div>
       </div>

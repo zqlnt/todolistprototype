@@ -2,7 +2,7 @@
 
 This guide explains how to set up and develop the Sentinel Todo App locally.
 
-## 🚀 Quick Start
+## Quick Start
 
 ### Prerequisites
 - Node.js 18+ 
@@ -60,7 +60,7 @@ npm run dev:api
 - Backend API: http://localhost:8000
 - API Docs: http://localhost:8000/docs
 
-## 🏗️ Project Structure
+## Project Structure
 
 ```
 todolistprototype/
@@ -78,7 +78,7 @@ todolistprototype/
 └── docs/                  # Documentation
 ```
 
-## 🔧 Development Workflow
+## Development Workflow
 
 ### Frontend Development
 
@@ -101,7 +101,7 @@ todolistprototype/
 2. **Schema**: Update schema in `backend/supabase_setup.sql`
 3. **RLS**: Update Row Level Security policies
 
-## 🧪 Testing
+## Testing
 
 ### Frontend Testing
 ```bash
@@ -131,7 +131,7 @@ curl -X POST http://localhost:8000/api/tasks/ \
   -d '{"title": "Test task"}'
 ```
 
-## 🔍 Debugging
+## Debugging
 
 ### Frontend Debugging
 - Use React Developer Tools
@@ -148,7 +148,7 @@ curl -X POST http://localhost:8000/api/tasks/ \
 - Use SQL editor for direct database access
 - Check RLS policies
 
-## 📝 Code Style
+## Code Style
 
 ### Frontend
 - Use TypeScript for all components
@@ -162,7 +162,7 @@ curl -X POST http://localhost:8000/api/tasks/ \
 - Use Pydantic for data validation
 - Use FastAPI best practices
 
-## 🚀 Deployment
+## Deployment
 
 ### Development Deployment
 1. Push to GitHub
@@ -175,7 +175,7 @@ curl -X POST http://localhost:8000/api/tasks/ \
 3. Deploy to Render and Vercel
 4. Test all functionality
 
-## 🔐 Authentication
+## Authentication
 
 ### Development Mode
 - Uses fallback database
@@ -187,7 +187,7 @@ curl -X POST http://localhost:8000/api/tasks/ \
 - JWT tokens for API access
 - Row Level Security for data protection
 
-## 📊 Mock Data vs Real Data
+## Mock Data vs Real Data
 
 ### Mock Data (Development)
 - Located in `src/store.ts`
@@ -201,7 +201,7 @@ curl -X POST http://localhost:8000/api/tasks/ \
 - Real-time synchronization
 - Production-ready
 
-## 🐛 Common Issues
+## Common Issues
 
 ### Frontend Issues
 1. **CORS errors**: Check backend CORS settings
@@ -218,7 +218,7 @@ curl -X POST http://localhost:8000/api/tasks/ \
 2. **Connection errors**: Check environment variables
 3. **Query errors**: Check SQL syntax
 
-## 📚 Resources
+## Resources
 
 - [React Documentation](https://react.dev/)
 - [FastAPI Documentation](https://fastapi.tiangolo.com/)
@@ -226,7 +226,7 @@ curl -X POST http://localhost:8000/api/tasks/ \
 - [Zustand Documentation](https://zustand-demo.pmnd.rs/)
 - [Tailwind CSS Documentation](https://tailwindcss.com/docs)
 
-## 🤝 Contributing
+## Contributing
 
 1. Fork the repository
 2. Create a feature branch
@@ -234,10 +234,10 @@ curl -X POST http://localhost:8000/api/tasks/ \
 4. Test thoroughly
 5. Submit a pull request
 
-## 📄 License
+## License
 
 This project is licensed under the MIT License.
 
 ---
 
-Happy coding! 🚀
+Happy coding!
