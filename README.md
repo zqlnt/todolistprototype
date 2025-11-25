@@ -28,41 +28,133 @@ A modern, full-stack productivity application with user-specific categories and 
 
 ### Prerequisites
 - Node.js 18+
-- Python 3.9+
+- Python 3.9+ (or 3.13)
+- Git
 
-### 1. Clone and Install
+### Common Setup Issues and Solutions
+
+**Issue 1: Python externally-managed-environment**
+If you get an error about "externally-managed-environment" when installing Python packages, you need to use a virtual environment (this is standard practice on newer Python installations).
+
+**Issue 2: Missing concurrently package**
+The `npm run dev:full` command requires the `concurrently` package to be installed via npm.
+
+### Step-by-Step Setup
+
+#### 1. Clone the Repository
 ```bash
-git clone https://github.com/yourusername/todolistprototype.git
+git clone https://github.com/zqlnt/todolistprototype.git
 cd todolistprototype
-npm install
-cd backend && pip install -r requirements.txt && cd ..
 ```
 
-### 2. Set Up Environment Variables
+#### 2. Install Frontend Dependencies
+```bash
+npm install
+```
 
-**Frontend (.env)**
+This installs all required packages including:
+- React, TypeScript, Vite
+- Tailwind CSS
+- Zustand (state management)
+- Supabase client
+- concurrently (for running both servers)
+
+#### 3. Set Up Backend Virtual Environment
+```bash
+cd backend
+python3 -m venv venv
+source venv/bin/activate  # On Windows: venv\Scripts\activate
+pip install -r requirements.txt
+cd ..
+```
+
+This creates an isolated Python environment and installs:
+- FastAPI
+- Uvicorn
+- Supabase Python client
+- Pydantic
+- python-jose, passlib (authentication)
+
+#### 4. Set Up Environment Variables
+
+**Frontend (.env)** - Create in project root:
 ```env
 VITE_API_BASE_URL=http://localhost:8000/api
 VITE_SUPABASE_URL=https://your-project.supabase.co
 VITE_SUPABASE_ANON_KEY=your_supabase_anon_key
 ```
 
-**Backend (.env)**
+**Backend (.env)** - Create in `backend/` directory:
 ```env
 SUPABASE_URL=https://your-project.supabase.co
 SUPABASE_ANON_KEY=your_supabase_anon_key
 JWT_SECRET_KEY=your_jwt_secret_key
 ```
 
-**Important**: Create these `.env` files in the root directory and `backend/` directory respectively.
+**Note**: The app will work in fallback mode without Supabase credentials for local development.
 
-### 3. Start Development
+#### 5. Start the Servers
+
+**Option A: Start Both Servers Separately (Recommended for Development)**
+
+Terminal 1 - Backend:
 ```bash
-npm run dev:full
+cd backend
+source venv/bin/activate  # Activate virtual environment
+python3 -m uvicorn main:app --host 0.0.0.0 --port 8000 --reload
 ```
 
-- Frontend: http://localhost:5173
-- Backend: http://localhost:8000
+Terminal 2 - Frontend:
+```bash
+npm run dev
+```
+
+**Option B: Start Both Servers with Concurrently**
+
+Note: This requires modifying the backend start command to use the venv. For now, use Option A.
+
+#### 6. Verify Installation
+- Backend API: http://localhost:8000/api/health
+- Frontend App: http://localhost:5173
+- API Docs: http://localhost:8000/docs
+
+You should see:
+- Backend returns: `{"status":"healthy","service":"sentinel-api"}`
+- Frontend loads the todo app interface
+
+### Troubleshooting Common Issues
+
+#### Backend Won't Start
+- **Error**: `ModuleNotFoundError: No module named 'fastapi'`
+  - **Solution**: Make sure you activated the virtual environment: `source backend/venv/bin/activate`
+  
+- **Error**: `externally-managed-environment`
+  - **Solution**: Always use the virtual environment (step 3 above)
+
+- **Error**: Port 8000 already in use
+  - **Solution**: Kill the existing process or use a different port:
+    ```bash
+    lsof -ti:8000 | xargs kill -9
+    ```
+
+#### Frontend Won't Start
+- **Error**: `sh: concurrently: command not found`
+  - **Solution**: Run `npm install` to install all dependencies
+  
+- **Error**: Port 5173 already in use
+  - **Solution**: Vite will automatically use the next available port
+
+- **Error**: Module not found errors
+  - **Solution**: Delete `node_modules` and reinstall:
+    ```bash
+    rm -rf node_modules package-lock.json
+    npm install
+    ```
+
+#### Database Connection Issues
+- **Warning**: `[ERROR] Missing Supabase environment variables`
+  - **Solution**: This is normal for local development. The app uses a fallback in-memory database.
+  - To use Supabase: Add proper credentials to `backend/.env`
 
 ## Database Setup
 
